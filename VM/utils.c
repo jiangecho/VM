@@ -17,11 +17,12 @@ u4 hash(u1* pchar, u4 prime){
 //TODO now i just want to support a maximum of 2^8 classes, so ...
 u4 hash(u1* pchar, u2 len, u4 prime){
 	int hash;
+	u1 i ;
 	hash = len;
 
-	while(*pchar != '\0')
+	for(i = 0; i < len; i++)
 	{
-		hash = (hash << 4)^(hash >> 28)^*(pchar++);
+		hash = (hash << 4)^(hash >> 28)^*(pchar + i);
 	}
 	hash %= prime;
 
@@ -34,12 +35,15 @@ u4 hash(u1* pchar, u2 len, u4 prime){
 int compare(u1* pchar1, u4 len1, u1* pchar2, u4 len2)
 {
 	int ret = 0;
-	int i = 0;
+	u4 i = 0;
 	if (len1 == len2)
 	{
 		for(i = 0; i < len1; i++)
 		{
-			*(pchar1 + i) == *(pchar2 + i);
+			if (*(pchar1 + i) != *(pchar2 + i))
+			{
+				break;
+			}
 		}
 		if (i == len1)
 		{
@@ -86,7 +90,13 @@ u1 fread_u1(FILE *fp)
 	int test = fgetc(fp);
 	//u1 byte1 = fgetc(fp);
 	u1 byte1 = test;
+	/*
 	if (byte1 == EOF)
+	{
+		printf("the end of file\n");
+	}
+	*/
+	if (feof(fp))
 	{
 		printf("the end of file\n");
 	}
