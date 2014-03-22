@@ -39,6 +39,10 @@ u1* malloc_code_area(u4 size)
 		p = pcode_area + code_area_offset;
 		code_area_offset += size;
 	}
+	else
+	{
+		printf("there is no memory in the code area\n");
+	}
 	//printf("mallac code area ok\n");
 	return p;
 }

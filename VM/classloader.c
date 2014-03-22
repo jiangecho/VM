@@ -29,6 +29,7 @@ void prepare_class(struct Class** ppclass);
 u1 is_class_loaded(struct class_name_entry* pclass_name_entry);
 void add_class_to_pending_list(struct class_name_entry* pclass_name_entry);
 void add_class_to_loaded_class_table(struct Class* pclass);
+u1 is_class_in_pending_list(struct class_name_entry* pclass_name_entry);
 
 
 u1 is_class_loaded(struct class_name_entry* pclass_name_entry)
@@ -56,21 +57,34 @@ u1 is_class_loaded(struct class_name_entry* pclass_name_entry)
 	return is_loaded;
 }
 
+//1, has been added to the pending list
+//0, does not 
+u1 is_class_in_pending_list(struct class_name_entry* pclass_name_entry)
+{
+	u1 ret = 0;
+	// the head is emputy
+	struct pending_load_class* pcur = ppending_load_class->next;
+	while(pcur != NULL)
+	{
+		if (pclass_name_entry->name_len == pcur->pclass_name_entry->name_len
+			&& compare(pclass_name_entry->pname, pclass_name_entry->name_len, 
+						pcur->pclass_name_entry->pname, pcur->pclass_name_entry->name_len))
+		{
+			ret = 1;
+			break;
+		}
+		pcur = pcur->next;
+	}
+
+	return ret;
+}
+
 void add_class_to_pending_list(struct class_name_entry* pclass_name_entry)
 {
 	int i;
 	struct pending_load_class* pcur = ppending_load_class;
 	struct pending_load_class* pnew_entry;
 
-	/*
-	if (is_class_loaded(pclass_name_entry))
-	{
-		printf("class: ");
-		print_class_name(pclass_name_entry);
-		printf("has been loaded\n");
-		return 0;
-	}
-	*/
 
 	pnew_entry = (struct pending_load_class* )malloc(sizeof(struct pending_load_class));
 	pnew_entry->pclass_name_entry = pclass_name_entry;
@@ -179,7 +193,7 @@ struct Class* load_class(char* pclass_path)
 	}
 	if (pfile == NULL)
 	{
-		printf("can not open file\n");
+		printf("can not open file: %s\n", pclass_path);
 		return NULL;
 	}
 	pclass->status = CLASS_LOADING;
@@ -239,18 +253,30 @@ struct Class* load_class(char* pclass_path)
 			printf("warning: now we do not support float\n");
 			fread_u4(pfile);
 			break;
+
+		// ATTENTION: long and double take two entries in the constant pool
+		// please refer to 4.4.5
 		case CONSTANT_Long:
 			//TODO now we do not support long
 			printf("warning: now we do not support long\n");
 			fread_u4(pfile);
 			fread_u4(pfile);
+
+			i ++;
+			pcp_info ++;
+
 			break;
 		case CONSTANT_Double:
 			//TODO now we do not support double 
 			printf("warning: now we do not support double\n");
 			fread_u4(pfile);
 			fread_u4(pfile);
+
+			i ++;
+			pcp_info ++;
+
 			break;
+
 		case CONSTANT_NameAndType:
 			pconstant_name_and_type_info = (struct constant_name_and_type_info *)malloc_code_area(sizeof(struct constant_name_and_type_info));
 			pconstant_name_and_type_info->name_index = fread_u2(pfile);
@@ -290,6 +316,7 @@ struct Class* load_class(char* pclass_path)
 			pcp_info->pinfo = pconstant_invokedynamic_info;
 			break;
 		default:
+			printf("default: tag error!\n");
 			break;
 
 		}
@@ -458,6 +485,7 @@ struct Class* load_class(char* pclass_path)
 		pclass->pattributes = NULL;
 	}
 
+	/*
 #if PRIINT_CLASS_STRUCTURE
 	printf("constant_pool_count: %d\n", pclass->constant_pool_count);
 
@@ -467,9 +495,11 @@ struct Class* load_class(char* pclass_path)
 	}
 
 #endif
+	*/
 
 	//TODO add the needed classes into the pending list and add this class to the loaded table
 	add_class_to_loaded_class_table(pclass);
+	printf("loaded: %s\n", pclass_path);
 
 	for (i = 1; i < pclass->constant_pool_count; i ++)
 	{
@@ -482,14 +512,27 @@ struct Class* load_class(char* pclass_path)
 			{
 				printf("class: ");
 				print_class_name(pclass_name_entry);
-				printf("has been loaded\n");
+				printf(" has been loaded\n");
 				continue;
 			}
+
+			if (is_class_in_pending_list(pclass_name_entry))
+			{
+				printf("class: ");
+				print_class_name(pclass_name_entry);
+				printf(" has been added to pending list\n");
+				continue;
+			}
+			printf("add class: ");
+			print_class_name(pclass_name_entry);
+			printf(" to pending list\n");
+
 			add_class_to_pending_list(pclass_name_entry);
 		}
 	}
 
 	pclass->status = CLASS_LOADED;
+	fclose(pfile);
 	return pclass;
 }
 
@@ -500,22 +543,35 @@ void load_pending_classes()
 	char* pfile_path;
 	//include the package name
 	u2 name_len;
-	u2 class_name_offset;
+	u2 path_len;
 
 
 	pcur = ppending_load_class->next;
 	while(pcur != NULL)
 	{
+
 		ppending_load_class->next = pcur->next;
 
-		//TODO find the coresponding class file
 		name_len = pcur->pclass_name_entry->name_len;
+		path_len = strlen(JRE_LIB_PATH) + name_len + 6;
+
+		/*
 		class_name_offset = get_class_name_start_index(pcur->pclass_name_entry);
 		pfile_path = (char* )malloc(sizeof(char) * (name_len - class_name_offset + 7));
 		memset(pfile_path, 0, name_len - class_name_offset + 1);
 		memcpy(pfile_path, pcur->pclass_name_entry->pname + class_name_offset, name_len - class_name_offset);
-
 		memcpy(pfile_path + name_len - class_name_offset, ".class", 7);
+		load_class(pfile_path);
+		*/
+
+		pfile_path = (char* )malloc(path_len + 1);
+		memset(pfile_path, 0, path_len + 1);
+		memcpy(pfile_path, JRE_LIB_PATH, sizeof(JRE_LIB_PATH));
+		memcpy(pfile_path + strlen(JRE_LIB_PATH), pcur->pclass_name_entry->pname, name_len);
+		memcpy(pfile_path + strlen(JRE_LIB_PATH) + name_len, ".class", 6);
+
+
+		//TODO some arraytype [C do not need to load
 		load_class(pfile_path);
 		
 		//free the memory in the pending list

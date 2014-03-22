@@ -20,7 +20,7 @@ int main()
 	struct Class *pclass;
 	init_code_area(MAX_CODE_AREA_SIZE);
 	init_class_loader();
-	pclass =  load_class("./test.class");
+	pclass =  load_class("./StringBuilder.class");
 	load_pending_classes();
 	
 
