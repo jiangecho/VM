@@ -74,6 +74,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="attribute.c" />
     <ClCompile Include="class.c" />
     <ClCompile Include="classloader.c" />
     <ClCompile Include="memory.c" />
@@ -81,6 +82,7 @@
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="attribute.h" />
     <ClInclude Include="class.h" />
     <ClInclude Include="classloader.h" />
     <ClInclude Include="conf.h" />

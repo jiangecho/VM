@@ -2,6 +2,7 @@
 #define _CLASS_H_
 
 #include "def.h"
+#include "attribute.h"
 
 #define ACC_PUBLIC          0x0001
 #define ACC_FINAL           0x0010
@@ -110,12 +111,6 @@ struct constant_invokedynamic_info
 {
 	u2 bootstrap_method_attr_index;
 	u2 name_and_type_index;
-};
-
-struct attribute_info{
-	u2 attribute_name_index;
-	u4 attribute_length;
-	u1* pinfo;
 };
 
 struct field_info{
