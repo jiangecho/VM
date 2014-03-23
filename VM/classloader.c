@@ -81,7 +81,6 @@ u1 is_class_in_pending_list(struct class_name_entry* pclass_name_entry)
 
 void add_class_to_pending_list(struct class_name_entry* pclass_name_entry)
 {
-	int i;
 	struct pending_load_class* pcur = ppending_load_class;
 	struct pending_load_class* pnew_entry;
 
@@ -185,7 +184,10 @@ struct Class* load_class(char* pclass_path)
 
 	struct class_name_entry* pclass_name_entry;
 
-	u4 i, j, k;
+	struct code_attribute_info* pcode_attribute_info;
+	struct exception_table_entry* pexception_table_entry;
+
+	u4 i, j, k, m, n;
 	if (pclass == NULL) 
 	{
 		printf("do not have enough code area\n");
@@ -371,8 +373,11 @@ struct Class* load_class(char* pclass_path)
 						pattribute_info->pinfo = (u1* )malloc_code_area(pattribute_info->attribute_length);
 						for (k = 0; k < pattribute_info->attribute_length; k++)
 						{
-							*(pattribute_info->pinfo + k) = fread_u1(pfile);
+							//TODO
+							//*(pattribute_info->pinfo + k) = fread_u1(pfile);
+							fread_u1(pfile);
 						}
+						
 					}
 					else
 					{
@@ -423,18 +428,89 @@ struct Class* load_class(char* pclass_path)
 					pattribute_info->attribute_name_index = fread_u2(pfile);
 					pattribute_info->attribute_length = fread_u4(pfile);
 
+					// TODO now we only support code attribute in the method's attributes
+					switch(convert_attribute_name_2_int_value(pclass, pattribute_info))
+					{
+					case CODE_ATTRIBUTE_INT_TYPE:
+						pcode_attribute_info = (struct code_attribute_info* )malloc_code_area(sizeof(struct code_attribute_info));
+						pcode_attribute_info->max_stack = fread_u2(pfile);
+						pcode_attribute_info->max_locals = fread_u2(pfile);
+						pcode_attribute_info->code_length = fread_u4(pfile);
+
+						if (pcode_attribute_info->code_length > 0)
+						{
+							pcode_attribute_info->pcode = (u1* )malloc_code_area(sizeof(u1) * pcode_attribute_info->code_length);
+							for (k = 0; k < pcode_attribute_info->code_length; k ++)
+							{
+								*(pcode_attribute_info->pcode + k) = fread_u1(pfile);
+							}
+						}
+
+						pcode_attribute_info->exception_table_length = fread_u2(pfile);
+						if (pcode_attribute_info->exception_table_length > 0)
+						{
+							pexception_table_entry = (struct exception_table_entry* )malloc_code_area(sizeof(struct exception_table_entry) * pcode_attribute_info->exception_table_length);
+							pcode_attribute_info->pexception_table_entry = pexception_table_entry;
+							for (k = 0; k < pcode_attribute_info->exception_table_length; k ++)
+							{
+								pexception_table_entry->start_pc = fread_u2(pfile);
+								pexception_table_entry->end_pc = fread_u2(pfile);
+								pexception_table_entry->handler_pc = fread_u2(pfile);
+								pexception_table_entry->catch_type = fread_u2(pfile);
+
+								pexception_table_entry ++;
+							}
+						}
+						{
+							pcode_attribute_info->pexception_table_entry = NULL;
+						}
+
+						//TODO now we do not support additional attributes in the code attribute
+						pcode_attribute_info->attributes_count = fread_u2(pfile);
+						if (pcode_attribute_info->attributes_count > 0)
+						{
+							for (m = 0; m < pcode_attribute_info->attributes_count; m++)
+							{
+								// attribute_name_index;
+								fread_u2(pfile);
+								n = fread_u4(pfile);
+								for (k = 0; k < n; k++)
+								{
+									fread_u1(pfile);
+								}
+							}
+						}
+
+						pattribute_info->pinfo = pcode_attribute_info;
+						break;
+
+					default:
+						for (k = 0; k < pattribute_info->attribute_length; k++)
+						{
+							//TODO
+							//*(pattribute_info->pinfo + k) = fread_u1(pfile);
+							fread_u1(pfile);
+							pattribute_info->pinfo = NULL;
+						}
+						break;
+					}
+
+					/*
 					if (pattribute_info->attribute_length > 0)
 					{
 						pattribute_info->pinfo = (u1* )malloc_code_area(pattribute_info->attribute_length);
 						for (k = 0; k < pattribute_info->attribute_length; k++)
 						{
-							*(pattribute_info->pinfo + k) = fread_u1(pfile);
+							//TODO
+							//*(pattribute_info->pinfo + k) = fread_u1(pfile);
+							fread_u1(pfile);
 						}
 					}
 					else
 					{
 						pattribute_info->pinfo = NULL;
 					}
+					*/
 
 					pattribute_info ++;
 				}
@@ -469,7 +545,9 @@ struct Class* load_class(char* pclass_path)
 				pattribute_info->pinfo = (u1* )malloc_code_area(pattribute_info->attribute_length);
 				for (k = 0; k < pattribute_info->attribute_length; k++)
 				{
-					*(pattribute_info->pinfo + k) = fread_u1(pfile);
+					//TODO
+					//*(pattribute_info->pinfo + k) = fread_u1(pfile);
+					fread_u1(pfile);
 				}
 			}
 			else
@@ -508,6 +586,11 @@ struct Class* load_class(char* pclass_path)
 			//add_class_to_pending_list();
 			pclass_name_entry = (struct class_name_entry* )malloc(sizeof(struct class_name_entry));
 			constant_class_info2class_name_entry(pclass, (struct constant_class_info* )(pclass->pcp_info[i].pinfo), &pclass_name_entry);
+			if (*(pclass_name_entry->pname) == '[')
+			{
+				printf("do not need to load array type\n");
+				continue;
+			}
 			if (is_class_loaded(pclass_name_entry))
 			{
 				printf("class: ");
@@ -523,10 +606,10 @@ struct Class* load_class(char* pclass_path)
 				printf(" has been added to pending list\n");
 				continue;
 			}
+
 			printf("add class: ");
 			print_class_name(pclass_name_entry);
 			printf(" to pending list\n");
-
 			add_class_to_pending_list(pclass_name_entry);
 		}
 	}
