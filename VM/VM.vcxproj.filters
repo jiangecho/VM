@@ -39,6 +39,9 @@
     <ClCompile Include="attribute.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="stack.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="log.h">
@@ -63,6 +66,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="attribute.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stack.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="frame.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

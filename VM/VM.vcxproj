@@ -79,6 +79,7 @@
     <ClCompile Include="classloader.c" />
     <ClCompile Include="memory.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="stack.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <ItemGroup>
@@ -87,8 +88,10 @@
     <ClInclude Include="classloader.h" />
     <ClInclude Include="conf.h" />
     <ClInclude Include="def.h" />
+    <ClInclude Include="frame.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="memory.h" />
+    <ClInclude Include="stack.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

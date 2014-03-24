@@ -19,8 +19,8 @@ void uninit_heap();
 u1* malloc_heap(u4 size);
 void free_heap(u1* pheap);
 
-u1* init_stack(u4 max_size);
-void uninit_stack();
+//u1* init_stack(u4 max_size);
+//void uninit_stack();
 
 
 #endif
