@@ -186,6 +186,7 @@ struct Class* load_class(char* pclass_path)
 
 	struct code_attribute_info* pcode_attribute_info;
 	struct exception_table_entry* pexception_table_entry;
+	struct exceptions_attribute_info* pexception_attribute_info;
 
 	u4 i, j, k, m, n;
 	if (pclass == NULL) 
@@ -482,6 +483,21 @@ struct Class* load_class(char* pclass_path)
 						}
 
 						pattribute_info->pinfo = pcode_attribute_info;
+						pattribute_info->attribute_type = CODE_ATTRIBUTE_INT_TYPE;
+						break;
+
+					case EXCEPTIONS_ATTRIBUTE_INT_TYPE:
+						pexception_attribute_info = (struct exceptions_attribute_info* )malloc_code_area(sizeof(struct exceptions_attribute_info));
+						pexception_attribute_info->number_of_exceptions = fread_u2(pfile);
+						pexception_attribute_info->pexception_index_table = (u2* )malloc_code_area(sizeof(u2) * pexception_attribute_info->number_of_exceptions);
+
+						for (k = 0; k < pexception_attribute_info->number_of_exceptions; k++)
+						{
+							*(pexception_attribute_info->pexception_index_table + k) = fread_u2(pfile);
+						}
+
+						pattribute_info->pinfo = pexception_attribute_info;
+						pattribute_info->attribute_type = EXCEPTIONS_ATTRIBUTE_INT_TYPE;
 						break;
 
 					default:
@@ -491,6 +507,7 @@ struct Class* load_class(char* pclass_path)
 							//*(pattribute_info->pinfo + k) = fread_u1(pfile);
 							fread_u1(pfile);
 							pattribute_info->pinfo = NULL;
+							pattribute_info->attribute_type = UNKNOWN_ATTRIBUTE_INT_TYPE;
 						}
 						break;
 					}
@@ -555,6 +572,7 @@ struct Class* load_class(char* pclass_path)
 				pattribute_info->pinfo = NULL;
 			}
 
+			pattribute_info->attribute_type = UNKNOWN_ATTRIBUTE_INT_TYPE;
 			pattribute_info ++;
 		}
 	} 

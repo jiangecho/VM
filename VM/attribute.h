@@ -10,6 +10,7 @@
 #define CONSTANT_VALUE_ATTRIBUTE_INT_TYPE   0
 #define CODE_ATTRIBUTE_INT_TYPE             1
 #define EXCEPTIONS_ATTRIBUTE_INT_TYPE       2 
+#define UNKNOWN_ATTRIBUTE_INT_TYPE			0xFF
 //TODO minimum implement, only support part of the attributes
 
 struct attribute_info{

@@ -5,4 +5,7 @@
 #define u2 unsigned short 
 #define u4 unsigned int 
 
+#define OK   1
+#define FAIL 0
+
 #endif
