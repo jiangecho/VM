@@ -21,6 +21,7 @@ struct stack* init_stack(u4 size)
 		return NULL;
 	}
 
+	pstack->ptop = pstack->pbottom;
 	pstack->size = size;
 	pstack->pcurrent_frame = NULL;
 	return pstack;
@@ -31,6 +32,7 @@ void uninit_stack(struct stack* pstack)
 	free(pstack);
 }
 
+// TODO the next method's local variables overlap current method's operand stack
 u1 push_frame(struct stack* pstack, struct method_info* pmethod_info)
 {
 	//TODO parse the method_info to find out the size of the frame
@@ -85,7 +87,9 @@ u1 pop_frame(struct stack* pstack)
 	pstack->pcurrent_frame = pframe->fp;
 	pstack->ptop -= size;
 
-	if (pstack->ptop >= pstack->pbottom)
+	// while pstack->ptop == pstack->pbottom, it means that it is the end of current thread(there is not
+	// any more bytecode to interpreter).
+	if (pstack->ptop > pstack->pbottom)
 	{
 		return OK;
 	}
