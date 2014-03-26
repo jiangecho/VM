@@ -3,6 +3,7 @@
 
 #include "def.h"
 #include "attribute.h"
+#include "method.h"
 
 #define ACC_PUBLIC          0x0001
 #define ACC_FINAL           0x0010
@@ -194,5 +195,8 @@ void constant_class_info2class_name_entry(struct Class* pclass, struct constant_
 
 // return the start index of the class name(do no include '/')
 u2 get_class_name_start_index(struct class_name_entry* pclass_name_entry);
+
+//TODO implement
+struct method_info* find_method(char* class_name, char* method_name);
 
 #endif
