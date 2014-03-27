@@ -33,7 +33,7 @@ void uninit_stack(struct stack* pstack)
 }
 
 // TODO the next method's local variables overlap current method's operand stack
-u1 push_frame(struct stack* pstack, struct method_info* pmethod_info)
+u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pmethod_info)
 {
 	//TODO parse the method_info to find out the size of the frame
 	int i;
@@ -64,7 +64,9 @@ u1 push_frame(struct stack* pstack, struct method_info* pmethod_info)
 				pframe->max_stack = pcode_attribute_info->max_stack;
 				pframe->fp = pstack->pcurrent_frame;
 				pframe->pmethod_info = pmethod_info;
+				pframe->pclass = pclas;
 				pframe->pc = 0;
+				pframe->sp = 0;
 
 				pstack->pcurrent_frame = pframe;
 				pstack->ptop += frame_size;

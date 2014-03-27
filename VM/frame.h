@@ -11,11 +11,17 @@ struct frame
 	// pointer to the previous frame
 	struct frame* fp;
 
-	// the offset of the next opcode
+	// the offset of the current opcode
 	u2 pc;
 
-	u2 method_index_in_constant_pool;
+	// the offset of the current frame stack
+	u2 sp;
+
+	//u2 method_index_in_constant_pool;
+
+	//TODO optimize 
 	struct method_info* pmethod_info;
+	struct Class* pclass;
 };
 
 
