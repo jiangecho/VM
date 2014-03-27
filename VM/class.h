@@ -49,29 +49,56 @@ struct cp_info{
 };
 
 struct constant_class_info{
-	u2 name_index;
+	union{
+		u2 name_index;
+		struct Class* pclass;
+	};
 };
 
 struct constant_fieldref_info{
-	u2 class_index;
-	u2 name_and_type_index;
+	union{
+		u2 class_index;
+		struct Class* pclass;
+	};
+
+	union{
+		u2 name_and_type_index;
+		struct constant_name_and_type_info* pconstant_name_and_type_info;
+	};
 
 	//TODO all fields are 4 bytes, except long & double
 	u2 offset_in_instance;
 };
 
 struct constant_methodref_info{
-	u2 class_index;
-	u2 name_and_type_index;
+	union{
+		u2 class_index;
+		struct Class* pclass;
+	};
+
+	union{
+		u2 name_and_type_index;
+		struct constant_name_and_type_info* pconstant_name_and_type_info;
+	};
 };
 
 struct constant_interfacemethodref_info{
-	u2 class_index;
-	u2 name_and_type_index;
+	union{
+		u2 class_index;
+		struct Class* pclass;
+	};
+
+	union{
+		u2 name_and_type_index;
+		struct constant_name_and_type_info* pconstant_name_and_type_info;
+	};
 };
 
 struct constant_string_info{
-	u2 string_index;
+	union{
+		u2 string_index;
+		struct constant_utf8_info* pconstant_utf8_info;
+	};
 };
 
 struct constant_integer_info{
@@ -83,8 +110,14 @@ struct constant_float_info{
 };
 
 struct constant_name_and_type_info{
-	u2 name_index;
-	u2 descriptor_index;
+	union{
+		u2 name_index;
+		struct constant_utf8_info* pname_constant_utf8_info;
+	};
+	union{
+		u2 descriptor_index;
+		struct constant_utf8_info* pdescriptor_constant_utf8_info;
+	};
 };
 
 struct constant_utf8_info{
@@ -97,6 +130,7 @@ struct interfaces_index_in_constant_pool
 	u2* index;// the index of the constant pool
 };
 
+// TODO do not support yet
 struct constant_method_handle_info
 {
 	u1 reference_kind;
@@ -105,9 +139,13 @@ struct constant_method_handle_info
 
 struct constant_method_type_info
 {
-	u2 descriptor_index;
+	union{
+		u2 descriptor_index;
+		struct constant_utf8_info* pconstant_utf8_info;
+	};
 };
 
+//TODO do not support yet
 struct constant_invokedynamic_info
 {
 	u2 bootstrap_method_attr_index;
@@ -116,16 +154,31 @@ struct constant_invokedynamic_info
 
 struct field_info{
 	u2 access_flags;
-	u2 name_index;
-	u2 descriptor_index;
+	union{
+		u2 name_index;
+		struct constant_utf8_info* pname_constant_utf8_info;
+	};
+
+	union{
+		u2 descriptor_index;
+		struct constant_utf8_info* pdescriptor_constant_utf8_info;
+	};
+
 	u2 attributes_count;
 	struct attribute_info *pattributes;
 };
 
 struct method_info{
 	u2 access_flags;
-	u2 name_index;
-	u2 descriptor_index;
+	union{
+		u2 name_index;
+		struct constant_utf8_info* pname_constant_utf8_info;
+	};
+
+	union{
+		u2 descriptor_index;
+		struct constant_utf8_info* pdescriptor_constant_utf8_info;
+	};
 	u2 attributes_count;
 	struct attribute_info *pattributes;
 };
@@ -139,8 +192,14 @@ struct Class{
 	u2 constant_pool_count;
 	struct cp_info *pcp_info;
 	u2 access_flags;
-	u2 this_class;
-	u2 super_class;
+	union{
+		u2 this_class;
+		struct class_name_entry* pthis_class_name_entry;
+	};
+	union{
+		u2 super_class;
+		struct Class* psuper_class;
+	};
 	u2 interfaces_count;
 	u2* pinterfaces_index_in_constant_pool;
 	//struct interfaces_index_in_constant_pool *pinterfaces_index_in_constant_pool;
@@ -148,12 +207,9 @@ struct Class{
 	struct field_info *pfields;
 	u2 method_count;
 	struct method_info* pmethods;
+
 	u2 attributes_count;
 	struct attribute_info* pattributes;
-
-	// the following will be initialized while resolution
-	struct Class* pthis_class;
-	struct Class* psuper_class;
 
 	// all fields will be 4 bytes
 
@@ -173,6 +229,7 @@ struct Class{
 
 struct class_entry
 {
+	struct class_name_entry* pclass_name_entry;
 	struct Class* pclass;
 	struct class_entry* next;
 };
@@ -183,20 +240,23 @@ struct class_name_entry
 	u2 name_len;
 };
 
+/*
 struct pending_load_class
 {
 	struct class_name_entry* pclass_name_entry;
 	struct pending_load_class* next;
 };
+*/
 
-void get_class_name(struct Class* pclass, struct class_name_entry** pclass_name_entry);
+void get_class_name_internal(struct Class* pclass, struct class_name_entry** pclass_name_entry);
 void print_class_name(struct class_name_entry* pclass_name_entry);
 void constant_class_info2class_name_entry(struct Class* pclass, struct constant_class_info* pconstant_class_info, struct class_name_entry** pclass_name_entry);
 
 // return the start index of the class name(do no include '/')
 u2 get_class_name_start_index(struct class_name_entry* pclass_name_entry);
 
-//TODO implement
-struct method_info* find_method(char* class_name, char* method_name);
+struct method_info* find_method(char* class_name, u2 class_name_len, char* method_name, u2 method_name_len);
+
+struct Class* find_class(char* pclass_name, u2 class_name_len);
 
 #endif

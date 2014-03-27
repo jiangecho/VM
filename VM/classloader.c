@@ -12,7 +12,7 @@
 #define MAGIC 0xbebafeca
 
 // the first element is the head, does not contain any entry
-static struct pending_load_class* ppending_load_class = NULL;
+static struct class_entry* ppending_load_class = NULL;
 
 //global
 //struct class_entry* ploaded_classes = NULL;
@@ -42,7 +42,7 @@ u1 is_class_loaded(struct class_name_entry* pclass_name_entry)
 	while(pclass_entry != NULL)
 	{
 		// TODO
-		get_class_name(pclass_entry->pclass, &ptmp_class_name_entry);
+		get_class_name_internal(pclass_entry->pclass, &ptmp_class_name_entry);
 		
 		// 1, equal
 		if (compare(ptmp_class_name_entry->pname, ptmp_class_name_entry->name_len, pclass_name_entry->pname, pclass_name_entry->name_len))
@@ -63,7 +63,7 @@ u1 is_class_in_pending_list(struct class_name_entry* pclass_name_entry)
 {
 	u1 ret = 0;
 	// the head is emputy
-	struct pending_load_class* pcur = ppending_load_class->next;
+	struct class_entry* pcur = ppending_load_class->next;
 	while(pcur != NULL)
 	{
 		if (pclass_name_entry->name_len == pcur->pclass_name_entry->name_len
@@ -81,11 +81,11 @@ u1 is_class_in_pending_list(struct class_name_entry* pclass_name_entry)
 
 void add_class_to_pending_list(struct class_name_entry* pclass_name_entry)
 {
-	struct pending_load_class* pcur = ppending_load_class;
-	struct pending_load_class* pnew_entry;
+	struct class_entry* pcur = ppending_load_class;
+	struct class_entry* pnew_entry;
 
 
-	pnew_entry = (struct pending_load_class* )malloc(sizeof(struct pending_load_class));
+	pnew_entry = (struct class_entry* )malloc(sizeof(struct class_entry));
 	pnew_entry->pclass_name_entry = pclass_name_entry;
 	pnew_entry->next = NULL;
 
@@ -112,15 +112,15 @@ void add_class_to_loaded_class_table(struct Class* pclass)
 	}
 
 	pclass_name_entry = (struct class_name_entry* )malloc(sizeof(struct class_name_entry));
-	get_class_name(pclass, &pclass_name_entry);
+	get_class_name_internal(pclass, &pclass_name_entry);
 
 	name_hash = hash(pclass_name_entry->pname, pclass_name_entry->name_len, CLASS_TABLE_SIZE);
 	pcur_class_entry = &(loaded_class_table[name_hash]);
 
-	free(pclass_name_entry);
 
 	pnew_class_entry = (struct class_entry* )malloc(sizeof(struct class_entry));
 	pnew_class_entry->pclass = pclass;
+	pnew_class_entry->pclass_name_entry = pclass_name_entry;
 	pnew_class_entry->next = NULL;
 
 	if (*pcur_class_entry != NULL)
@@ -137,15 +137,13 @@ void add_class_to_loaded_class_table(struct Class* pclass)
 		*pcur_class_entry = pnew_class_entry;
 		(*pcur_class_entry)->next = NULL;
 	}
-
-
 }
 
 
 void init_class_loader()
 {
 	//TODO remember to free the memory
-	ppending_load_class = (struct pending_load_class* )malloc(sizeof(struct pending_load_class));
+	ppending_load_class = (struct class_entry* )malloc(sizeof(struct class_entry));
 	ppending_load_class->next = NULL;
 
 	memset(loaded_class_table, 0, sizeof(loaded_class_table));
@@ -639,8 +637,8 @@ struct Class* load_class(char* pclass_path)
 
 void load_pending_classes()
 {
-	struct pending_load_class* pcur;
-	struct pending_load_class* ptmp;
+	struct class_entry* pcur;
+	struct class_entry* ptmp;
 	char* pfile_path;
 	//include the package name
 	u2 name_len;
@@ -681,6 +679,8 @@ void load_pending_classes()
 		free(ptmp);
 		free(pfile_path);
 	}
+	free(ppending_load_class);
+	ppending_load_class = NULL;
 
 }
 

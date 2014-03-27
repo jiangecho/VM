@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void get_class_name(struct Class* pclass, struct class_name_entry** pclass_name_entry)
+void get_class_name_internal(struct Class* pclass, struct class_name_entry** pclass_name_entry)
 {
 	u2 this_class_index;
 	//u2 this_class_name_index;
@@ -83,7 +83,7 @@ void print_class_name(struct class_name_entry* pclass_name_entry)
 	}
 }
 
-struct method_info* find_method(char* class_name, char* method_name)
+struct method_info* find_method(char* class_name, u2 class_name_len, char* method_name, u2 method_name_len)
 {
 	extern struct class_entry *(loaded_class_table[CLASS_TABLE_SIZE]);
 	struct class_entry* pclass_entry;
@@ -94,7 +94,7 @@ struct method_info* find_method(char* class_name, char* method_name)
 	struct method_info* pmethods;
 	struct method_info* pmethod = NULL;
 
-	u2 class_name_hash = hash(class_name, strlen(class_name), CLASS_TABLE_SIZE);
+	u2 class_name_hash = hash(class_name, class_name_len, CLASS_TABLE_SIZE);
 	u2 class_index;
 	u2 class_name_index;
 
@@ -121,7 +121,7 @@ struct method_info* find_method(char* class_name, char* method_name)
 				for (i = 0; i < pclass->method_count; i ++)
 				{
 					pconstant_utf8_info = (struct constant_utf8_info* )pcp_info[pmethods[i].name_index].pinfo;
-					if (compare(method_name, strlen(method_name), pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
+					if (compare(method_name, method_name_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
 					{
 						pmethod = &(pmethods[i]);
 						
@@ -141,5 +141,26 @@ found:
 
 	return pmethod;
 
+}
+
+struct Class* find_class(char* pclass_name, u2 class_name_len)
+{
+	extern struct class_entry *(loaded_class_table[CLASS_TABLE_SIZE]);
+	u2 class_name_hash = hash(pclass_name, class_name_len, CLASS_TABLE_SIZE);
+
+	struct class_entry* pclass_entry = loaded_class_table[class_name_hash];
+	struct Class* pclass = NULL;
+
+	while(pclass_entry != NULL)
+	{
+		if (compare(pclass_name, class_name_len, pclass_entry->pclass_name_entry->pname, pclass_entry->pclass_name_entry->name_len))
+		{
+			pclass = pclass_entry->pclass;	
+			break;
+		}
+		pclass_entry = pclass_entry->next;
+	}
+
+	return pclass;
 
 }
