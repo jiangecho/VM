@@ -192,6 +192,8 @@ void link_class(struct Class* pclass)
 		}
 		*(pconstant_pool_status + i) = LINKED;
 	}
+
+	free(pconstant_pool_status);
 }
 
 void link()
