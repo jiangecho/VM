@@ -48,6 +48,9 @@
     <ClCompile Include="method.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="linker.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="log.h">
@@ -89,13 +92,10 @@
     <ClInclude Include="interpreter.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="opcode_impl\invokestatic.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="opcode_impl\iconst_3.h">
+    <ClInclude Include="linker.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
