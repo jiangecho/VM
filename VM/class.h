@@ -42,6 +42,12 @@
 #define OBJECT  L
 #define ARRAY   [
 
+#define CLASS_LOADING     0
+#define CLASS_LOADED      1
+#define CLASS_LINKED      2
+#define CLASS_PREPARATION 3
+#define CLASS_RESOLUTION  4
+#define CLASS_INITIALIZATION 5
 
 struct cp_info{
 	u1 tag;
@@ -194,7 +200,7 @@ struct Class{
 	u2 access_flags;
 	union{
 		u2 this_class;
-		struct class_name_entry* pthis_class_name_entry;
+		struct Class* pthis_class;
 	};
 	union{
 		u2 super_class;

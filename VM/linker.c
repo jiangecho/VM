@@ -48,7 +48,7 @@ static void link_constant_string_info(struct Class* pclass, u2 string_index)
 	pconstant_string_info->pconstant_utf8_info = (struct constant_utf8_info* )pclass->pcp_info[pconstant_string_info->string_index].pinfo;
 }
 
-void link_class(struct Class* pclass)
+void link_constant_pool(struct Class* pclass)
 {
 	u2 i;
 
@@ -196,6 +196,53 @@ void link_class(struct Class* pclass)
 	free(pconstant_pool_status);
 }
 
+static void link_field(struct Class* pclass)
+{
+	int i;
+	struct field_info* pfield_info = pclass->pfields;
+	
+	for (i = 0; i < pclass->fields_count; i ++)
+	{
+		pfield_info[i].pname_constant_utf8_info = ((struct constant_utf8_info*)(pclass->pcp_info[pfield_info[i].name_index].pinfo));
+		pfield_info[i].pdescriptor_constant_utf8_info = ((struct constant_utf8_info* )(pclass->pcp_info[pfield_info[i].descriptor_index].pinfo));
+	}
+
+}
+
+static void link_method(struct Class* pclass)
+{
+	int i;
+	struct method_info* pmethod_info = pclass->pmethods;
+
+	for (i = 0; i < pclass->method_count;i ++)
+	{
+		pmethod_info[i].pname_constant_utf8_info = (struct constant_utf8_info* )(pclass->pcp_info[pmethod_info[i].name_index].pinfo);
+		pmethod_info[i].pdescriptor_constant_utf8_info = (struct constant_utf8_info* )(pclass->pcp_info[pmethod_info[i].descriptor_index].pinfo);
+	}
+
+}
+
+// do not need to link the attributes
+static void link_attribute(struct Class* pclass)
+{
+
+}
+
+// attention: this method must not be called before link_constant_pool
+static void link_this_and_super(struct Class* pclass)
+{
+	struct constant_class_info* pconstant_class_info = (struct constant_class_info* )pclass->pcp_info[pclass->this_class].pinfo;
+	pclass->pthis_class = pconstant_class_info->pclass;
+
+	// Object does not have super class
+	if (pclass->super_class != 0)
+	{
+		pconstant_class_info = (struct constant_class_info* )pclass->pcp_info[pclass->super_class].pinfo;
+		pclass->psuper_class = pconstant_class_info->pclass;
+	}
+}
+
+//TODO link the fields, methods and attribute
 void link()
 {
 	extern struct class_entry *(loaded_class_table[CLASS_TABLE_SIZE]);
@@ -208,8 +255,24 @@ void link()
 
 		while(pclass_entry != NULL)
 		{
+			/*
+			link_constant_pool(pclass_entry->pclass);
+			link_field(pclass_entry->pclass);
+			link_method(pclass_entry->pclass);
+			link_this_and_super(pclass_entry->pclass);
+			*/
+
 			link_class(pclass_entry->pclass);
 			pclass_entry = pclass_entry->next;
 		}
 	}
+}
+
+void link_class(struct Class* pclass)
+{
+	link_constant_pool(pclass);
+	link_field(pclass);
+	link_method(pclass);
+	link_this_and_super(pclass);
+
 }
