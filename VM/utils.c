@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "class.h"
 
 /*
 // C does not support override;
@@ -132,4 +133,17 @@ short fread_short(FILE *fp)
 u1 mask(u2 value, u2 mask)
 {
 	return ((value & mask) == mask) ? 1 : 0;
+}
+
+u2 get_field_size(u1 first_byte_of_descriptor)
+{
+	if ((first_byte_of_descriptor == DOUBLE) || first_byte_of_descriptor == LONG)
+	{
+		return 8;
+	}
+	else
+	{
+		return 4;
+	}
+
 }

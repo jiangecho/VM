@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 
+static u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type);
+
 void get_class_name_internal(struct Class* pclass, struct class_name_entry** pclass_name_entry)
 {
 	u2 this_class_index;
@@ -162,5 +164,61 @@ struct Class* find_class(char* pclass_name, u2 class_name_len)
 	}
 
 	return pclass;
+
+}
+
+// include the fields inherited from the super classes
+u2 get_class_total_fields_size(struct Class* pclass)
+{
+	// add the private fields size;
+	return pclass->class_fields_size - pclass->public_protected_class_fields_size + get_total_public_protected_fields_size(pclass, 0);
+}
+
+
+u2 get_instance_total_fields_size(struct Class* pclass)
+{
+	return pclass->instance_fileds_size - pclass->public_protected_instance_fields_size + get_total_public_protected_fields_size(pclass, 1);
+}
+
+
+static u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type)
+{
+	int i;
+	u2 size = 0;
+	struct Class* ptmp_class;
+
+	if (pclass->psuper_class != NULL)
+	{
+		if (fileds_type == 0)
+		{
+			size += pclass->public_protected_class_fields_size + get_total_public_protected_fields_size(pclass->psuper_class, fileds_type);
+		}
+		else
+		{
+			size += pclass->public_protected_instance_fields_size + get_total_public_protected_fields_size(pclass->psuper_class, fileds_type);
+		}
+
+		for (i = 0; i < pclass->interfaces_count; i ++)
+		{
+			ptmp_class = ((struct constant_class_info* )((pclass->pcp_info[pclass->pinterfaces_index_in_constant_pool[i]]).pinfo))->pclass;
+			size += get_total_public_protected_fields_size(ptmp_class, fileds_type);
+		}
+
+		return size;
+	}
+	else
+	{
+		if (fileds_type == 0)
+		{
+			size = pclass->public_protected_class_fields_size;
+		}
+		else
+		{
+			size = pclass->public_protected_instance_fields_size;
+		}
+
+		return size;
+		
+	}
 
 }

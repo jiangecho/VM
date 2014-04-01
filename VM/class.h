@@ -78,6 +78,8 @@ struct constant_fieldref_info{
 		struct constant_name_and_type_info* pconstant_name_and_type_info;
 	};
 
+	// inclde the fields inherited from the super classes
+	u2 offset;
 };
 
 struct constant_methodref_info{
@@ -90,6 +92,9 @@ struct constant_methodref_info{
 		u2 name_and_type_index;
 		struct constant_name_and_type_info* pconstant_name_and_type_info;
 	};
+
+	// will be set when this entry is resolution
+	struct method_info* pmethod_info;
 };
 
 struct constant_interfacemethodref_info{
@@ -102,6 +107,8 @@ struct constant_interfacemethodref_info{
 		u2 name_and_type_index;
 		struct constant_name_and_type_info* pconstant_name_and_type_info;
 	};
+
+	struct method_info* pmethod_info;
 };
 
 struct constant_string_info{
@@ -179,6 +186,7 @@ struct field_info{
 
 	//all fields are 4 bytes, except long & double
 	// the offset of this field in the class fields or the instance fields
+	// attention: do not include the fields inherited from the super classes or interfaces
 	u4 offset;
 };
 
@@ -279,5 +287,9 @@ u2 get_class_name_start_index(struct class_name_entry* pclass_name_entry);
 struct method_info* find_method(char* class_name, u2 class_name_len, char* method_name, u2 method_name_len);
 
 struct Class* find_class(char* pclass_name, u2 class_name_len);
+
+// include the fields inherited from the super classes
+u2 get_class_total_fields_size(struct Class* pclass);
+u2 get_instance_total_fields_size(struct Class* pclass);
 
 #endif
