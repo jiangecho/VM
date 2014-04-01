@@ -14,6 +14,12 @@
 #define ACC_ANNOTATION      0x2000
 #define ACC_ENUM            0x4000
 
+#define ACC_PRIVATE         0x0002
+#define ACC_PROTECTED       0x0004
+#define ACC_STATIC          0x0008
+#define ACC_VOLATILE        0x0040
+#define ACC_TRANSIENT       0x0080
+
 #define CONSTANT_Class              7
 #define CONSTANT_Fieldref           9
 #define CONSTANT_Methodref          10
@@ -30,17 +36,17 @@
 #define CONSTANT_InvokeDynamic      18
 
 //field type
-#define BYTE	B
-#define CHAR    C
-#define DOUBLE	D
-#define FLOAT   F
-#define INT     I
-#define LONG    J
-#define SHORT   S
-#define BOOLEAN Z
+#define BYTE	'B'
+#define CHAR    'C'
+#define DOUBLE	'D'
+#define FLOAT   'F'
+#define INT     'I'
+#define LONG    'J'
+#define SHORT   'S'
+#define BOOLEAN 'Z'
 
-#define OBJECT  L
-#define ARRAY   [
+#define OBJECT  'L'
+#define ARRAY   '['
 
 #define CLASS_LOADING     0
 #define CLASS_LOADED      1
@@ -72,8 +78,6 @@ struct constant_fieldref_info{
 		struct constant_name_and_type_info* pconstant_name_and_type_info;
 	};
 
-	//TODO all fields are 4 bytes, except long & double
-	u2 offset_in_instance;
 };
 
 struct constant_methodref_info{
@@ -172,6 +176,10 @@ struct field_info{
 
 	u2 attributes_count;
 	struct attribute_info *pattributes;
+
+	//all fields are 4 bytes, except long & double
+	// the offset of this field in the class fields or the instance fields
+	u4 offset;
 };
 
 struct method_info{
@@ -216,7 +224,7 @@ struct Class{
 
 	u2 attributes_count;
 	struct attribute_info* pattributes;
-
+/*
 	// all fields will be 4 bytes
 
 	// include the instance fields inherited from the super class
@@ -229,7 +237,14 @@ struct Class{
 
 	//use to speed up the calculating of subclass's class_field_count
 	u2 public_protected_class_field_count;
-
+*/
+	// all fields are 4 bytes, except long & double
+	// use to construct the class and instance, these values will be set when resolution
+	// attention: do not include the fields inherited from the super class
+	u4 class_fields_size;
+	u4 instance_fileds_size;
+	u4 public_protected_class_fields_size;
+	u4 public_protected_instance_fields_size;
 
 };
 
@@ -258,7 +273,7 @@ void get_class_name_internal(struct Class* pclass, struct class_name_entry** pcl
 void print_class_name(struct class_name_entry* pclass_name_entry);
 void constant_class_info2class_name_entry(struct Class* pclass, struct constant_class_info* pconstant_class_info, struct class_name_entry** pclass_name_entry);
 
-// return the start index of the class name(do no include '/')
+// return the start index of the class name(do no include the package name and the last '/')
 u2 get_class_name_start_index(struct class_name_entry* pclass_name_entry);
 
 struct method_info* find_method(char* class_name, u2 class_name_len, char* method_name, u2 method_name_len);

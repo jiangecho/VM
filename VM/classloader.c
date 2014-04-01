@@ -30,6 +30,7 @@ u1 is_class_loaded(struct class_name_entry* pclass_name_entry);
 void add_class_to_pending_list(struct class_name_entry* pclass_name_entry);
 void add_class_to_loaded_class_table(struct Class* pclass);
 u1 is_class_in_pending_list(struct class_name_entry* pclass_name_entry);
+static u4 get_field_size(u1 descriptor);
 
 
 u1 is_class_loaded(struct class_name_entry* pclass_name_entry)
@@ -187,6 +188,7 @@ struct Class* load_class(char* pclass_path)
 	struct exceptions_attribute_info* pexception_attribute_info;
 
 	u4 i, j, k, m, n;
+	u4 field_size;
 	if (pclass == NULL) 
 	{
 		printf("do not have enough code area\n");
@@ -197,6 +199,7 @@ struct Class* load_class(char* pclass_path)
 		printf("can not open file: %s\n", pclass_path);
 		return NULL;
 	}
+	memset(pclass, 0, sizeof(struct Class));
 	pclass->status = CLASS_LOADING;
 	pclass->magic = fread_u4(pfile);
 	pclass->minor_version = fread_u2(pfile);
@@ -356,6 +359,34 @@ struct Class* load_class(char* pclass_path)
 			pfield_info->name_index = fread_u2(pfile);
 			pfield_info->descriptor_index = fread_u2(pfile);
 			pfield_info->attributes_count = fread_u2(pfile);
+			
+			pconstant_utf8_info = (struct constant_utf8_info * )(pclass->pcp_info[pfield_info->descriptor_index].pinfo);
+			field_size = get_field_size(*(pconstant_utf8_info->pbytes));
+
+			if ((mask(pfield_info->access_flags, ACC_PUBLIC)) || (mask(pfield_info->access_flags, ACC_PROTECTED)))
+			{
+				if (mask(pfield_info->access_flags, ACC_STATIC))
+				{
+					pclass->public_protected_class_fields_size += field_size;
+					pclass->class_fields_size += field_size;
+				}
+				else
+				{
+					pclass->public_protected_instance_fields_size += field_size;
+					pclass->instance_fileds_size += field_size;
+				}
+			}
+			else
+			{
+				if (mask(pfield_info->access_flags, ACC_STATIC))
+				{
+					pclass->class_fields_size += field_size;
+				}
+				else
+				{
+					pclass->instance_fileds_size += field_size;
+				}
+			}
 
 			if (pfield_info->attributes_count > 0)
 			{
@@ -695,6 +726,19 @@ void prepare_class(struct Class** ppclass){
 		{
 			//TODO 
 		}
+	}
+
+}
+
+static u4 get_field_size(u1 first_byte_of_descriptor)
+{
+	if ((first_byte_of_descriptor == DOUBLE) || first_byte_of_descriptor == LONG)
+	{
+		return 8;
+	}
+	else
+	{
+		return 4;
 	}
 
 }
