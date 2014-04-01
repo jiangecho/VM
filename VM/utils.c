@@ -128,3 +128,8 @@ short fread_short(FILE *fp)
 		| (((short)byte1) & 0x00FF);
 
 }
+
+u1 mask(u2 value, u2 mask)
+{
+	return ((value & mask) == mask) ? 1 : 0;
+}

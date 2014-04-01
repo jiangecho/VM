@@ -22,4 +22,9 @@ int fread_int(FILE *fp);
 short fread_short(FILE *fp);
 long fread_long(FILE *fp);
 
+
+// check whether the mask bits in value is set or not
+// 1, all the mask bits are set
+u1 mask(u2 value, u2 mask);
+
 #endif
