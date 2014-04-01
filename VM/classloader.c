@@ -30,7 +30,6 @@ u1 is_class_loaded(struct class_name_entry* pclass_name_entry);
 void add_class_to_pending_list(struct class_name_entry* pclass_name_entry);
 void add_class_to_loaded_class_table(struct Class* pclass);
 u1 is_class_in_pending_list(struct class_name_entry* pclass_name_entry);
-static u4 get_field_size(u1 descriptor);
 
 
 u1 is_class_loaded(struct class_name_entry* pclass_name_entry)
@@ -196,10 +195,10 @@ struct Class* load_class(char* pclass_path)
 	}
 	if (pfile == NULL)
 	{
-		printf("can not open file: %s\n", pclass_path);
+		//printf("can not open file: %s\n", pclass_path);
 		return NULL;
 	}
-	memset(pclass, 0, sizeof(struct Class));
+
 	pclass->status = CLASS_LOADING;
 	pclass->magic = fread_u4(pfile);
 	pclass->minor_version = fread_u2(pfile);
@@ -228,6 +227,7 @@ struct Class* load_class(char* pclass_path)
 			pconstant_fieldref_info = (struct constant_fieldref_info*)malloc_code_area(sizeof(struct constant_fieldref_info));
 			pconstant_fieldref_info->class_index = fread_u2(pfile);
 			pconstant_fieldref_info->name_and_type_index = fread_u2(pfile);
+			pconstant_fieldref_info->offset = 0xFFFF;
 			pcp_info->pinfo = pconstant_fieldref_info;
 			break;
 		case CONSTANT_Methodref:
@@ -668,6 +668,7 @@ struct Class* load_class(char* pclass_path)
 
 void load_pending_classes()
 {
+	struct Class* pclass;
 	struct class_entry* pcur;
 	struct class_entry* ptmp;
 	char* pfile_path;
@@ -695,6 +696,7 @@ void load_pending_classes()
 		*/
 
 		pfile_path = (char* )malloc(path_len + 1);
+
 		memset(pfile_path, 0, path_len + 1);
 		memcpy(pfile_path, JRE_LIB_PATH, sizeof(JRE_LIB_PATH));
 		memcpy(pfile_path + strlen(JRE_LIB_PATH), pcur->pclass_name_entry->pname, name_len);
@@ -702,7 +704,21 @@ void load_pending_classes()
 
 
 		//TODO some arraytype [C do not need to load
-		load_class(pfile_path);
+		pclass = load_class(pfile_path);
+
+		if (pclass == NULL)
+		{
+			memset(pfile_path, 0, path_len + 1);
+			//memcpy(pfile_path, "./", sizeof(JRE_LIB_PATH));
+			memcpy(pfile_path, pcur->pclass_name_entry->pname, name_len);
+			memcpy(pfile_path + name_len, ".class", 6);
+			pclass = load_class(pfile_path);
+
+			if (pclass == NULL)
+			{
+				printf("error: can not load: %s\n", pfile_path);
+			}
+		}
 		
 		//free the memory in the pending list
 		ptmp = pcur;
@@ -730,15 +746,3 @@ void prepare_class(struct Class** ppclass){
 
 }
 
-static u4 get_field_size(u1 first_byte_of_descriptor)
-{
-	if ((first_byte_of_descriptor == DOUBLE) || first_byte_of_descriptor == LONG)
-	{
-		return 8;
-	}
-	else
-	{
-		return 4;
-	}
-
-}

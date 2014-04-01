@@ -1,6 +1,7 @@
 #include "memory.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static u1* pcode_area = NULL;
 static u4 code_area_offset = 0;
@@ -15,6 +16,9 @@ u1* init_code_area(u4 max_size)
 		code_area_max_size = max_size;
 		code_area_offset = 0;
 	}
+
+	// set the code area to 0
+	memset(p, 0, max_size);
 	printf("init code area ok\n");
 	return p;
 }
