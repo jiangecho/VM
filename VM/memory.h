@@ -11,7 +11,7 @@ u1* malloc_code_area(u4 size);
 
 // TODO we do not need to free the code area, the code area can only be write once, and then it will
 // be read only.
-void free_code_area(u1* pcode_area);
+void free_code_area(void* pcode_area);
 
 u1* init_heap(u4 max_size);
 void uninit_heap();

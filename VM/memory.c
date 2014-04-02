@@ -51,6 +51,7 @@ u1* malloc_code_area(u4 size)
 	return p;
 }
 
+// TODO now we do not support free the code area
 void free_code_area(void* pcode_area)
 {
 

@@ -162,7 +162,7 @@ struct Class* load_class(char* pclass_path)
 	//TODO open the file successfully?
 	FILE *pfile = fopen(pclass_path, "rb");
 
-	struct Class *pclass = (struct Class *)malloc_code_area(sizeof(struct Class));
+	struct Class *pclass;
 
 	struct cp_info *pcp_info = NULL;
 	struct field_info *pfield_info = NULL;
@@ -189,15 +189,16 @@ struct Class* load_class(char* pclass_path)
 
 	u4 i, j, k, m, n;
 	u4 field_size;
-	if (pclass == NULL) 
-	{
-		printf("do not have enough code area\n");
-		return NULL;
-	}
 	if (pfile == NULL)
 	{
 		//printf("can not open file: %s\n", pclass_path);
-		free_code_area(pclass);
+		return NULL;
+	}
+
+	pclass = (struct Class *)malloc_code_area(sizeof(struct Class));
+	if (pclass == NULL) 
+	{
+		printf("do not have enough code area\n");
 		return NULL;
 	}
 

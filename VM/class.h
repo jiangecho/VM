@@ -88,6 +88,8 @@ struct constant_fieldref_info{
 struct constant_methodref_info{
 	union{
 		u2 class_index;
+
+		// will be set when this entry is linked
 		struct Class* pclass;
 	};
 
@@ -190,7 +192,7 @@ struct field_info{
 	//all fields are 4 bytes, except long & double
 	// the offset of this field in the class fields or the instance fields
 	// attention: do not include the fields inherited from the super classes or interfaces
-	u4 offset;
+	//u4 offset;
 };
 
 struct method_info{
