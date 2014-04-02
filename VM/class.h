@@ -55,6 +55,9 @@
 #define CLASS_RESOLUTION  4
 #define CLASS_INITIALIZATION 5
 
+#define CLASS_FIELD       0
+#define INSTANCE_FIELD    1
+
 struct cp_info{
 	u1 tag;
 	void* pinfo;
@@ -218,6 +221,7 @@ struct Class{
 		u2 this_class;
 		struct Class* pthis_class;
 	};
+	struct class_name_entry* pclass_name_entry;
 	union{
 		u2 super_class;
 		struct Class* psuper_class;
@@ -291,5 +295,6 @@ struct Class* find_class(char* pclass_name, u2 class_name_len);
 // include the fields inherited from the super classes
 u2 get_class_total_fields_size(struct Class* pclass);
 u2 get_instance_total_fields_size(struct Class* pclass);
+u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type);
 
 #endif

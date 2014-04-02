@@ -120,6 +120,7 @@ void add_class_to_loaded_class_table(struct Class* pclass)
 
 	pnew_class_entry = (struct class_entry* )malloc(sizeof(struct class_entry));
 	pnew_class_entry->pclass = pclass;
+	pclass->pclass_name_entry = pclass_name_entry;
 	pnew_class_entry->pclass_name_entry = pclass_name_entry;
 	pnew_class_entry->next = NULL;
 
@@ -196,6 +197,7 @@ struct Class* load_class(char* pclass_path)
 	if (pfile == NULL)
 	{
 		//printf("can not open file: %s\n", pclass_path);
+		free_code_area(pclass);
 		return NULL;
 	}
 
@@ -723,6 +725,7 @@ void load_pending_classes()
 		//free the memory in the pending list
 		ptmp = pcur;
 		pcur = ppending_load_class->next;
+		free(ptmp->pclass_name_entry);
 		free(ptmp);
 		free(pfile_path);
 	}

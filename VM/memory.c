@@ -51,7 +51,7 @@ u1* malloc_code_area(u4 size)
 	return p;
 }
 
-void free_code_area(u1* pcode_area)
+void free_code_area(void* pcode_area)
 {
 
 }

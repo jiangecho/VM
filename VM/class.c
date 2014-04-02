@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type);
+u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type);
 
 void get_class_name_internal(struct Class* pclass, struct class_name_entry** pclass_name_entry)
 {
@@ -171,17 +171,17 @@ struct Class* find_class(char* pclass_name, u2 class_name_len)
 u2 get_class_total_fields_size(struct Class* pclass)
 {
 	// add the private fields size;
-	return pclass->class_fields_size - pclass->public_protected_class_fields_size + get_total_public_protected_fields_size(pclass, 0);
+	return pclass->class_fields_size - pclass->public_protected_class_fields_size + get_total_public_protected_fields_size(pclass, CLASS_FIELD);
 }
 
 
 u2 get_instance_total_fields_size(struct Class* pclass)
 {
-	return pclass->instance_fileds_size - pclass->public_protected_instance_fields_size + get_total_public_protected_fields_size(pclass, 1);
+	return pclass->instance_fileds_size - pclass->public_protected_instance_fields_size + get_total_public_protected_fields_size(pclass, INSTANCE_FIELD);
 }
 
 
-static u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type)
+u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type)
 {
 	int i;
 	u2 size = 0;
@@ -189,7 +189,7 @@ static u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds
 
 	if (pclass->psuper_class != NULL)
 	{
-		if (fileds_type == 0)
+		if (fileds_type == CLASS_FIELD)
 		{
 			size += pclass->public_protected_class_fields_size + get_total_public_protected_fields_size(pclass->psuper_class, fileds_type);
 		}
@@ -208,7 +208,7 @@ static u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds
 	}
 	else
 	{
-		if (fileds_type == 0)
+		if (fileds_type == CLASS_FIELD)
 		{
 			size = pclass->public_protected_class_fields_size;
 		}
