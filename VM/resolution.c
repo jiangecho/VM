@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 static u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconstant_fieldref_info);
-static u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconstant_fieldref_info);
+static u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info);
 
 // due to have resolutioned the constant_classref_info,
 // so now we only need to resolution constant_fieldref_info, constant_methodref_info and so on
@@ -20,7 +20,11 @@ void resolution(struct Class* pclass, u2 index_in_constant_pool)
 	{
 	case CONSTANT_Fieldref:
 		pconstant_fieldref_info = (struct constant_fieldref_info* )pcp_info.pinfo;
-		resolution_field(pclass, pconstant_fieldref_info);
+		if (!resolution_field(pclass, pconstant_fieldref_info))
+		{
+			//TODO handle NoSuchFieldError, now just print it
+			printf("NoSuchFieldError\n");
+		}
 
 		break;
 	case CONSTANT_Methodref:
@@ -148,3 +152,48 @@ u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconsta
 	return FAIL;
 }
 
+
+//TODO now do not handle signature polymorphic method
+static u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info)
+{
+	int i = 0;
+	struct Class* ptmp_class;
+
+	struct constant_utf8_info* pname_constant_utf8_info = pconstant_methodref_info->pconstant_name_and_type_info->pname_constant_utf8_info;
+	struct constant_utf8_info* pdescriptor_constant_utf8_info = pconstant_methodref_info->pconstant_name_and_type_info->pdescriptor_constant_utf8_info;  
+
+	// resolution current class
+	for (i = 0; i < pclass->method_count; i ++)
+	{
+		if ((pclass->pmethods[i].pname_constant_utf8_info == pname_constant_utf8_info)
+			&& (pclass->pmethods[i].pdescriptor_constant_utf8_info == pdescriptor_constant_utf8_info))
+		{
+			pconstant_methodref_info->pmethod_info = &(pclass->pmethods[i]);
+			return OK;
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	//resolution super classes
+	ptmp_class = pclass->psuper_class;
+	while(ptmp_class != NULL)
+	{
+		if (resolution_method(ptmp_class, pconstant_methodref_info))
+		{
+			return OK;
+		}
+		else
+		{
+			ptmp_class = ptmp_class->psuper_class;
+			continue;
+		}
+	}
+
+	//TODO resolution the super interfaces
+
+	return FAIL;
+
+}
