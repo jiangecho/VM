@@ -54,6 +54,12 @@
     <ClCompile Include="resolution.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="heap.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="object.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="log.h">
@@ -102,6 +108,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="resolution.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="object.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="heap.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

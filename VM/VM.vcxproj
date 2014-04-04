@@ -77,11 +77,13 @@
     <ClCompile Include="attribute.c" />
     <ClCompile Include="class.c" />
     <ClCompile Include="classloader.c" />
+    <ClCompile Include="heap.c" />
     <ClCompile Include="interpreter.c" />
     <ClCompile Include="linker.c" />
     <ClCompile Include="memory.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="method.c" />
+    <ClCompile Include="object.c" />
     <ClCompile Include="resolution.c" />
     <ClCompile Include="stack.c" />
     <ClCompile Include="utils.c" />
@@ -93,11 +95,13 @@
     <ClInclude Include="conf.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="frame.h" />
+    <ClInclude Include="heap.h" />
     <ClInclude Include="interpreter.h" />
     <ClInclude Include="linker.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="memory.h" />
     <ClInclude Include="method.h" />
+    <ClInclude Include="object.h" />
     <ClInclude Include="opcode.h" />
     <ClInclude Include="resolution.h" />
     <ClInclude Include="resource.h" />
