@@ -4,7 +4,9 @@
 
 #include <stdio.h>
 
-static u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconstant_fieldref_info);
+static u1 resolution_field_internal(struct Class* pclass, u1 flag, struct constant_fieldref_info* pconstant_fieldref_info, 
+	u2 class_field_start_offset, u2 instance_field_start_offset);
+static u1 resolution_field(struct Class* pclass,  struct constant_fieldref_info* pconstant_fieldref_info);
 static u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info);
 
 // due to have resolutioned the constant_classref_info,
@@ -20,7 +22,7 @@ void resolution(struct Class* pclass, u2 index_in_constant_pool)
 	{
 	case CONSTANT_Fieldref:
 		pconstant_fieldref_info = (struct constant_fieldref_info* )pcp_info.pinfo;
-		if (!resolution_field(pclass, pconstant_fieldref_info))
+		if (!resolution_field(pclass,  pconstant_fieldref_info))
 		{
 			//TODO handle NoSuchFieldError, now just print it
 			printf("NoSuchFieldError\n");
@@ -43,6 +45,10 @@ void resolution(struct Class* pclass, u2 index_in_constant_pool)
 }
 
 
+u1 resolution_field(struct Class* pclass,  struct constant_fieldref_info* pconstant_fieldref_info)
+{
+	return resolution_field_internal(pclass, 1, pconstant_fieldref_info, 0, 0);
+}
 /*
  * the instance fields structure
  *  
@@ -56,7 +62,13 @@ void resolution(struct Class* pclass, u2 index_in_constant_pool)
  *      super classes' class fields
 */
 
-u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconstant_fieldref_info)
+/*
+ * flag: 1, call from outside the function; 0, call from inner the function
+ * xxx_start_offset: this class's fields' start offset in the class instance or object instance
+*/
+
+u1 resolution_field_internal(struct Class* pclass, u1 flag, struct constant_fieldref_info* pconstant_fieldref_info, 
+	u2 class_field_start_offset, u2 instance_field_start_offset)
 {
 	u2 offset;
 	int i, j;
@@ -70,9 +82,16 @@ u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconsta
 	// resolution current class
 	for (i = 0; i < pclass->fields_count; i ++)
 	{
-		if ((pname_constant_utf8_info == pclass->pfields[i].pname_constant_utf8_info)
-			&& (pdescriptor_constant_utf8_info == pclass->pfields[i].pdescriptor_constant_utf8_info))
+		//if ((pname_constant_utf8_info == pclass->pfields[i].pname_constant_utf8_info)
+		//	&& (pdescriptor_constant_utf8_info == pclass->pfields[i].pdescriptor_constant_utf8_info))
+		if (compare(pname_constant_utf8_info->pbytes, pname_constant_utf8_info->length, 
+			pclass->pfields[i].pname_constant_utf8_info->pbytes, pclass->pfields[i].pname_constant_utf8_info->length)
+			&& compare(pdescriptor_constant_utf8_info->pbytes, pdescriptor_constant_utf8_info->length,
+			pclass->pfields[i].pdescriptor_constant_utf8_info->pbytes, pclass->pfields[i].pdescriptor_constant_utf8_info->length))
 		{
+			// TODO  we need to check the access flag firstly
+
+
 			// found
 			if (mask(pclass->pfields[i].access_flags, ACC_STATIC))
 			{
@@ -84,12 +103,14 @@ u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconsta
 					}
 				}
 
+				/*
 				if (pclass->psuper_class != NULL)
 				{
 					offset += get_total_public_protected_fields_size(pclass->psuper_class, CLASS_FIELD);
 				}
+				*/
 
-				
+				pconstant_fieldref_info->offset = class_field_start_offset + offset;
 			}
 			else
 			{
@@ -100,14 +121,17 @@ u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconsta
 						offset +=  get_field_size(*(pclass->pfields[j].pdescriptor_constant_utf8_info->pbytes));
 					}
 				}
-
+				/*
 				if (pclass->psuper_class != NULL)
 				{
 					offset += get_total_public_protected_fields_size(pclass->psuper_class, INSTANCE_FIELD);
 				}
+				*/
+
+				pconstant_fieldref_info->offset = instance_field_start_offset + offset;
 			}
 
-			pconstant_fieldref_info->offset = offset;
+			//pconstant_fieldref_info->offset = offset;
 
 			return OK;
 		}
@@ -119,11 +143,23 @@ u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconsta
 
 
 	// resolution super interfaces
-	offset = 0;
+
+	if (flag == 1)
+	{
+		class_field_start_offset += pclass->class_fields_size;
+		instance_field_start_offset += pclass->instance_fileds_size;
+	}else
+	{
+		class_field_start_offset += pclass->public_protected_class_fields_size;
+		instance_field_start_offset += pclass->public_protected_instance_fields_size;
+	}
+
+
+
 	for (i = 0; i < pclass->interfaces_count; i ++)
 	{
 		ptmp_class = ((struct constant_class_info* )(pclass->pcp_info[pclass->pinterfaces_index_in_constant_pool[i]].pinfo))->pclass;
-		if (resolution_field(ptmp_class, pconstant_fieldref_info))
+		if (resolution_field_internal(ptmp_class,0, pconstant_fieldref_info, class_field_start_offset, instance_field_start_offset))
 		{
 			return OK;
 		}
@@ -138,7 +174,7 @@ u1 resolution_field(struct Class* pclass, struct constant_fieldref_info* pconsta
 	ptmp_class = pclass->psuper_class;
 	while(ptmp_class != NULL)
 	{
-		if (resolution_field(ptmp_class, pconstant_fieldref_info))
+		if (resolution_field_internal(ptmp_class, 0, pconstant_fieldref_info, class_field_start_offset, instance_field_start_offset))
 		{
 			return OK;
 		}

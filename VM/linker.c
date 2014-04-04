@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LINKED 1
+//#define CLASS_LINKED 1
 #define UN_LINKED 0
 
 static void link_constant_class_info(struct Class* pclass, u2 class_index)
@@ -72,7 +72,7 @@ void link_constant_pool(struct Class* pclass)
 	// the constant pool start from index 1
 	for (i = 1; i < pclass->constant_pool_count; i++)
 	{
-		if (*(pconstant_pool_status + i) == LINKED)
+		if (*(pconstant_pool_status + i) == CLASS_LINKED)
 		{
 			continue;
 		}
@@ -90,7 +90,7 @@ void link_constant_pool(struct Class* pclass)
 			if (*(pconstant_pool_status + pconstant_fieldref_info->class_index) == UN_LINKED)
 			{
 				link_constant_class_info(pclass, pconstant_fieldref_info->class_index);
-				*(pconstant_pool_status + pconstant_fieldref_info->class_index) = LINKED;
+				*(pconstant_pool_status + pconstant_fieldref_info->class_index) = CLASS_LINKED;
 				
 			}
 
@@ -100,7 +100,7 @@ void link_constant_pool(struct Class* pclass)
 			{
 				//pconstant_name_and_type_info->pname_constant_utf8_info
 				link_constant_name_and_type_info(pclass, pconstant_fieldref_info->name_and_type_index);
-				*(pconstant_pool_status + pconstant_fieldref_info->name_and_type_index) = LINKED;
+				*(pconstant_pool_status + pconstant_fieldref_info->name_and_type_index) = CLASS_LINKED;
 			}
 			pconstant_fieldref_info->pconstant_name_and_type_info = (struct constant_name_and_type_info* )pcp_info[pconstant_fieldref_info->name_and_type_index].pinfo;
 
@@ -111,7 +111,7 @@ void link_constant_pool(struct Class* pclass)
 			if (*(pconstant_pool_status + pconstant_methodref_info->class_index) == UN_LINKED)
 			{
 				link_constant_class_info(pclass, pconstant_methodref_info->class_index);
-				*(pconstant_pool_status + pconstant_methodref_info->class_index) = LINKED;
+				*(pconstant_pool_status + pconstant_methodref_info->class_index) = CLASS_LINKED;
 			}
 
 			pconstant_methodref_info->pclass = ((struct constant_class_info* )(pcp_info[pconstant_methodref_info->class_index].pinfo))->pclass;
@@ -119,7 +119,7 @@ void link_constant_pool(struct Class* pclass)
 			if (*(pconstant_pool_status + pconstant_methodref_info->name_and_type_index) == UN_LINKED)
 			{
 				link_constant_name_and_type_info(pclass, pconstant_methodref_info->name_and_type_index);
-				*(pconstant_pool_status + pconstant_methodref_info->name_and_type_index) = LINKED;
+				*(pconstant_pool_status + pconstant_methodref_info->name_and_type_index) = CLASS_LINKED;
 			}
 
 			pconstant_methodref_info->pconstant_name_and_type_info = (struct constant_name_and_type_info* )pcp_info[pconstant_methodref_info->name_and_type_index].pinfo;
@@ -131,7 +131,7 @@ void link_constant_pool(struct Class* pclass)
 			if (*(pconstant_pool_status + pconstant_interfacemethodref_info->class_index) == UN_LINKED)
 			{
 				link_constant_class_info(pclass, pconstant_interfacemethodref_info->class_index);
-				*(pconstant_pool_status + pconstant_interfacemethodref_info->class_index) = LINKED;
+				*(pconstant_pool_status + pconstant_interfacemethodref_info->class_index) = CLASS_LINKED;
 			}
 
 			pconstant_interfacemethodref_info->pclass = ((struct constant_class_info* )(pcp_info[pconstant_interfacemethodref_info->class_index].pinfo))->pclass;
@@ -139,7 +139,7 @@ void link_constant_pool(struct Class* pclass)
 			if (*(pconstant_pool_status + pconstant_interfacemethodref_info->name_and_type_index) == UN_LINKED)
 			{
 				link_constant_name_and_type_info(pclass, pconstant_interfacemethodref_info->name_and_type_index);
-				*(pconstant_pool_status + pconstant_interfacemethodref_info->name_and_type_index) = LINKED;
+				*(pconstant_pool_status + pconstant_interfacemethodref_info->name_and_type_index) = CLASS_LINKED;
 			}
 
 			pconstant_interfacemethodref_info->pconstant_name_and_type_info = (struct constant_name_and_type_info* )pcp_info[pconstant_interfacemethodref_info->name_and_type_index].pinfo;
@@ -190,7 +190,7 @@ void link_constant_pool(struct Class* pclass)
 			printf("default: tag error!\n");
 			break;
 		}
-		*(pconstant_pool_status + i) = LINKED;
+		*(pconstant_pool_status + i) = CLASS_LINKED;
 	}
 
 	free(pconstant_pool_status);
@@ -275,4 +275,5 @@ void link_class(struct Class* pclass)
 	link_method(pclass);
 	link_this_and_super(pclass);
 
+	pclass->status = CLASS_LINKED;
 }

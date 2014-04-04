@@ -4,6 +4,7 @@
 #include "def.h"
 #include "attribute.h"
 #include "method.h"
+#include "object.h"
 
 #define ACC_PUBLIC          0x0001
 #define ACC_FINAL           0x0010
@@ -51,9 +52,8 @@
 #define CLASS_LOADING     0
 #define CLASS_LOADED      1
 #define CLASS_LINKED      2
-#define CLASS_PREPARATION 3
-#define CLASS_RESOLUTION  4
-#define CLASS_INITIALIZATION 5
+#define CLASS_PREPARED 3
+#define CLASS_INITIALIZATION 4
 
 #define CLASS_FIELD       0
 #define INSTANCE_FIELD    1
@@ -81,7 +81,7 @@ struct constant_fieldref_info{
 		struct constant_name_and_type_info* pconstant_name_and_type_info;
 	};
 
-	// inclde the fields inherited from the super classes
+	// include the fields inherited from the super classes
 	u2 offset;
 };
 
@@ -192,7 +192,7 @@ struct field_info{
 	//all fields are 4 bytes, except long & double
 	// the offset of this field in the class fields or the instance fields
 	// attention: do not include the fields inherited from the super classes or interfaces
-	//u4 offset;
+	u2 offset;
 };
 
 struct method_info{
@@ -267,6 +267,9 @@ struct Class{
 	u2 public_protected_class_total_fields_size;
 	u2 public_protected_instance_total_fields_size;
 
+
+	// will be set the the class is prepared
+	Class_instance* pclass_instance;
 };
 
 struct class_entry

@@ -187,6 +187,8 @@ struct Class* load_class(char* pclass_path)
 	struct exception_table_entry* pexception_table_entry;
 	struct exceptions_attribute_info* pexception_attribute_info;
 
+	struct constant_value_attribute_info* pconstant_value_attribute_info;
+
 	u4 i, j, k, m, n;
 	u4 field_size;
 	if (pfile == NULL)
@@ -370,11 +372,13 @@ struct Class* load_class(char* pclass_path)
 			{
 				if (mask(pfield_info->access_flags, ACC_STATIC))
 				{
+					pfield_info->offset = pclass->class_fields_size;
 					pclass->public_protected_class_fields_size += field_size;
 					pclass->class_fields_size += field_size;
 				}
 				else
 				{
+					pfield_info->offset = pclass->instance_fileds_size;
 					pclass->public_protected_instance_fields_size += field_size;
 					pclass->instance_fileds_size += field_size;
 				}
@@ -383,10 +387,12 @@ struct Class* load_class(char* pclass_path)
 			{
 				if (mask(pfield_info->access_flags, ACC_STATIC))
 				{
+					pfield_info->offset = pclass->class_fields_size;
 					pclass->class_fields_size += field_size;
 				}
 				else
 				{
+					pfield_info->offset = pclass->instance_fileds_size;
 					pclass->instance_fileds_size += field_size;
 				}
 			}
@@ -401,20 +407,28 @@ struct Class* load_class(char* pclass_path)
 					pattribute_info->attribute_name_index = fread_u2(pfile);
 					pattribute_info->attribute_length = fread_u4(pfile);
 
-					if (pattribute_info->attribute_length > 0)
+					switch(convert_attribute_name_2_int_value(pclass, pattribute_info))
 					{
+					case CONSTANT_VALUE_ATTRIBUTE_INT_TYPE:
+						pconstant_value_attribute_info = (struct constant_value_attribute_info* )malloc_code_area(sizeof(struct constant_value_attribute_info));
+						pconstant_value_attribute_info->constant_value_index = fread_u2(pfile);
+						pattribute_info->pinfo = pconstant_value_attribute_info;
+						pattribute_info->attribute_type = CONSTANT_VALUE_ATTRIBUTE_INT_TYPE;
+						break;
+					default:
+						
+						//TODO support more field attribute
+
 						pattribute_info->pinfo = (u1* )malloc_code_area(pattribute_info->attribute_length);
 						for (k = 0; k < pattribute_info->attribute_length; k++)
 						{
-							//TODO
-							//*(pattribute_info->pinfo + k) = fread_u1(pfile);
 							fread_u1(pfile);
+							pattribute_info->pinfo = NULL;
+							pattribute_info->attribute_type = UNKNOWN_ATTRIBUTE_INT_TYPE;
 						}
-						
-					}
-					else
-					{
-						pattribute_info->pinfo = NULL;
+
+						break;
+
 					}
 
 					pattribute_info ++;
@@ -619,6 +633,8 @@ struct Class* load_class(char* pclass_path)
 	pclass->class_total_fields_size = 0xFF;
 	pclass->public_protected_class_total_fields_size = 0xFF;
 	pclass->public_protected_instance_total_fields_size = 0xFF;
+
+	pclass->pclass_instance = NULL;
 
 	/*
 #if PRIINT_CLASS_STRUCTURE
