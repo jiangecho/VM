@@ -60,6 +60,9 @@
     <ClCompile Include="object.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="prepare.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="log.h">
@@ -114,6 +117,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="heap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="prepare.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
