@@ -255,10 +255,17 @@ struct Class{
 	// all fields are 4 bytes, except long & double
 	// use to construct the class and instance, these values will be set when resolution
 	// attention: do not include the fields inherited from the super class
-	u4 class_fields_size;
-	u4 instance_fileds_size;
-	u4 public_protected_class_fields_size;
-	u4 public_protected_instance_fields_size;
+	u2 class_fields_size;
+	u2 instance_fileds_size;
+	u2 public_protected_class_fields_size;
+	u2 public_protected_instance_fields_size;
+
+	// attention: include the fields inherited from the super classes and super interfaces
+	// will be set first call of get_xxx_size in the class.c
+	u2 class_total_fields_size;
+	u2 instance_total_fileds_size;
+	u2 public_protected_class_total_fields_size;
+	u2 public_protected_instance_total_fields_size;
 
 };
 

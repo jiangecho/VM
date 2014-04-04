@@ -171,13 +171,29 @@ struct Class* find_class(char* pclass_name, u2 class_name_len)
 u2 get_class_total_fields_size(struct Class* pclass)
 {
 	// add the private fields size;
-	return pclass->class_fields_size - pclass->public_protected_class_fields_size + get_total_public_protected_fields_size(pclass, CLASS_FIELD);
+	if (pclass->class_total_fields_size == 0xFF)
+	{
+		if (pclass->public_protected_class_total_fields_size == 0xFF)
+		{
+			pclass->public_protected_class_total_fields_size = get_total_public_protected_fields_size(pclass, CLASS_FIELD);
+		}
+		pclass->class_total_fields_size = pclass->class_fields_size - pclass->public_protected_class_fields_size + pclass->public_protected_class_total_fields_size; 
+	}
+	return pclass->class_total_fields_size;
 }
 
 
 u2 get_instance_total_fields_size(struct Class* pclass)
 {
-	return pclass->instance_fileds_size - pclass->public_protected_instance_fields_size + get_total_public_protected_fields_size(pclass, INSTANCE_FIELD);
+	if (pclass->instance_total_fileds_size == 0xFF)
+	{
+		if (pclass->public_protected_instance_total_fields_size == 0xFF)
+		{
+			pclass->public_protected_instance_total_fields_size = get_total_public_protected_fields_size(pclass, INSTANCE_FIELD);
+		}
+		pclass->instance_total_fileds_size = pclass->instance_fileds_size - pclass->public_protected_instance_fields_size + pclass->public_protected_instance_total_fields_size;
+	}
+	return pclass->instance_total_fileds_size;
 }
 
 

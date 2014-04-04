@@ -613,6 +613,13 @@ struct Class* load_class(char* pclass_path)
 		pclass->pattributes = NULL;
 	}
 
+
+	// set the xxx_total_xxx_size to 0
+	pclass->instance_total_fileds_size = 0xFF;
+	pclass->class_total_fields_size = 0xFF;
+	pclass->public_protected_class_total_fields_size = 0xFF;
+	pclass->public_protected_instance_total_fields_size = 0xFF;
+
 	/*
 #if PRIINT_CLASS_STRUCTURE
 	printf("constant_pool_count: %d\n", pclass->constant_pool_count);
