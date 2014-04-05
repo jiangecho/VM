@@ -36,4 +36,13 @@ u1 push_frame(struct stack* pstack, struct Class* pclass, struct method_info* pm
 // when the return value is FAIL, the current interpreter should be ended
 u1 pop_frame(struct stack* pstack);
 
+// attention: copy value from the p pointing address to the stack
+void push_4(struct stack* pstack, void* p);
+void push_8(struct stack* pstack, void* p);
+
+// attention: please use the return address to copy the popped value
+// can not use the value directly
+void* pop_4(struct stack* pstack);
+void* pop_8(struct stack* pstack);
+
 #endif

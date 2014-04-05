@@ -14,7 +14,7 @@ struct frame
 	// the offset of the current opcode
 	u2 pc;
 
-	// the offset of the current frame stack
+	// the offset(related to the start address of this frame) of the current frame stack
 	u2 sp;
 
 	//u2 method_index_in_constant_pool;
