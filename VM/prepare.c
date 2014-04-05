@@ -39,6 +39,8 @@ u1 prepare(struct Class* pclass)
 		prepare_internal(pclass, 0, 1);
 	}
 
+	pclass->status = CLASS_PREPARED;
+
 	return OK;
 }
 

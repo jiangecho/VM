@@ -47,6 +47,11 @@ void resolution(struct Class* pclass, u2 index_in_constant_pool)
 
 u1 resolution_field(struct Class* pclass,  struct constant_fieldref_info* pconstant_fieldref_info)
 {
+	// has been resolutioned
+	if(pconstant_fieldref_info->offset != 0xFFFF)
+	{
+		return OK;
+	}
 	return resolution_field_internal(pclass, 1, pconstant_fieldref_info, 0, 0);
 }
 /*
@@ -198,11 +203,25 @@ static u1 resolution_method(struct Class* pclass, struct constant_methodref_info
 	struct constant_utf8_info* pname_constant_utf8_info = pconstant_methodref_info->pconstant_name_and_type_info->pname_constant_utf8_info;
 	struct constant_utf8_info* pdescriptor_constant_utf8_info = pconstant_methodref_info->pconstant_name_and_type_info->pdescriptor_constant_utf8_info;  
 
+	// have been resolutioned
+	if(pconstant_methodref_info->pmethod_info != NULL)
+	{
+		return OK;
+	}
+
+	//TODO need to check whether this class is a class or not? maybe an interface
+	
+	//TODO now do not handle signature polymorphic method
+
 	// resolution current class
 	for (i = 0; i < pclass->method_count; i ++)
 	{
-		if ((pclass->pmethods[i].pname_constant_utf8_info == pname_constant_utf8_info)
-			&& (pclass->pmethods[i].pdescriptor_constant_utf8_info == pdescriptor_constant_utf8_info))
+		//if ((pclass->pmethods[i].pname_constant_utf8_info == pname_constant_utf8_info)
+		//	&& (pclass->pmethods[i].pdescriptor_constant_utf8_info == pdescriptor_constant_utf8_info))
+		if (compare(pclass->pmethods[i].pname_constant_utf8_info->pbytes, pclass->pmethods[i].pname_constant_utf8_info->length, 
+				pname_constant_utf8_info, pname_constant_utf8_info->length)
+			&& compare(pclass->pmethods[i].pdescriptor_constant_utf8_info->pbytes, pclass->pmethods[i].pdescriptor_constant_utf8_info->length,
+				pdescriptor_constant_utf8_info->pbytes, pdescriptor_constant_utf8_info->length))
 		{
 			pconstant_methodref_info->pmethod_info = &(pclass->pmethods[i]);
 			return OK;
@@ -229,6 +248,18 @@ static u1 resolution_method(struct Class* pclass, struct constant_methodref_info
 	}
 
 	//TODO resolution the super interfaces
+	for(i = 0; i < pclass->interfaces_count; i++)
+	{
+		ptmp_class = ((struct constant_class_info* )(pclass->pcp_info[pclass->pinterfaces_index_in_constant_pool[i]].pinfo))->pclass;
+		if(resolution_method(ptmp_class, pconstant_methodref_info))
+		{
+			return OK;
+		}
+		else
+		{
+			continue;
+		}
+	}
 
 	return FAIL;
 
