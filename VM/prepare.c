@@ -17,7 +17,7 @@
  *      super interfaces' fields // all interface fields are static and final
  *      super classes' class fields
 */
-static void prepare_internal(struct Class* pclass, u2 current_class_field_start_offset, u1 flag);
+static void prepare_internal(struct Class* pclass, Class_instance* pclass_instance, u2 current_class_field_start_offset, u1 flag);
 u1 prepare(struct Class* pclass)
 {
 	u2 size;
@@ -35,8 +35,10 @@ u1 prepare(struct Class* pclass)
 
 	if (pclass_instance)
 	{
+		pclass_instance->fields_size = pclass->class_total_fields_size;
+		pclass_instance->pclass = pclass;
 		pclass->pclass_instance = pclass_instance;
-		prepare_internal(pclass, 0, 1);
+		prepare_internal(pclass, pclass_instance, 0, 1);
 	}
 
 	pclass->status = CLASS_PREPARED;
@@ -44,7 +46,7 @@ u1 prepare(struct Class* pclass)
 	return OK;
 }
 
-static void prepare_internal(struct Class* pclass, u2 current_class_field_start_offset, u1 flag)
+static void prepare_internal(struct Class* pclass, Class_instance* pclass_instance, u2 current_class_field_start_offset, u1 flag)
 {
 	int i, j, index;
 	u2 offset = 0;
@@ -96,7 +98,8 @@ static void prepare_internal(struct Class* pclass, u2 current_class_field_start_
 						// attention can not use field_info.offset as the offset here
 						// because the field_info.offset include the private field
 
-						*((int* )((u1* )pclass->pclass_instance + sizeof(Class_instance) + current_class_field_start_offset + offset)) = pconstant_integer_info->value;
+						// TODO fix bug?: big endian
+						*((int* )((u1* )pclass_instance + sizeof(Class_instance) + current_class_field_start_offset + offset)) = pconstant_integer_info->value;
 					}
 
 				}
@@ -121,14 +124,15 @@ static void prepare_internal(struct Class* pclass, u2 current_class_field_start_
 	for (i = 0; i < pclass->interfaces_count; i++)
 	{
 		ptmp_class = ((struct constant_class_info* )(pclass->pcp_info[pclass->pinterfaces_index_in_constant_pool[i]].pinfo))->pclass;
-		prepare_internal(ptmp_class, current_class_field_start_offset, 0);
+		prepare_internal(ptmp_class, pclass_instance, current_class_field_start_offset, 0);
 	}
 
 	// set the super classes' fields to the default values
 	ptmp_class = pclass->psuper_class;
 	while (ptmp_class != NULL)
 	{
-		prepare_internal(ptmp_class, current_class_field_start_offset, 0);
+		prepare_internal(ptmp_class, pclass_instance, current_class_field_start_offset, 0);
+		ptmp_class = ptmp_class->psuper_class;
 	}
 
 }
