@@ -38,9 +38,11 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 	//TODO parse the method_info to find out the size of the frame
 	int i;
 	int ret = FAIL;
-	u2 frame_size;
+	u2 current_frame_max_size, parameters_size;
 	struct code_attribute_info* pcode_attribute_info;
 	struct frame* pframe;
+
+	parameters_size = get_parameters_size(pmethod_info);
 
 	for (i = 0; i < pmethod_info->attributes_count; i ++)
 	{
@@ -49,27 +51,48 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 
 			pcode_attribute_info = (struct code_attribute_info* )pmethod_info->pattributes[i].pinfo;
 
-			frame_size = pcode_attribute_info->max_locals * sizeof(u4) + pcode_attribute_info->max_stack * sizeof(u4) 
+			current_frame_max_size = pcode_attribute_info->max_locals * sizeof(u4) + pcode_attribute_info->max_stack * sizeof(u4) 
 				+ sizeof(struct frame);
-			if ((pstack->ptop + frame_size - pstack->pbottom) > pstack->size)
+			if ((pstack->ptop - parameters_size + current_frame_max_size - pstack->pbottom) > pstack->size)
 			{
 				printf("stack over follow\n");
 				ret = FAIL;
 			}
 			else
 			{
-				pframe = (struct frame* )(pstack->ptop + pcode_attribute_info->max_locals * sizeof(u4));
+				// the frames is overlap
+
+				if (pstack->ptop != pstack->pbottom)
+				{
+					pframe = (struct frame* )(pstack->ptop - parameters_size + pcode_attribute_info->max_locals * sizeof(u4));
+					pframe->plocals_start_addr = (u4* )(pstack->ptop - parameters_size);
+				}
+				else
+				{
+					pframe = (struct frame* )(pstack->ptop + pcode_attribute_info->max_locals * sizeof(u4));
+					pframe->plocals_start_addr = (u4* )pstack->ptop;
+				}
+
+				//pframe = (struct frame* )(pframe->plocals_start_addr + pcode_attribute_info->max_locals * sizeof(u4));
+
+				pframe->pstack_start_addr = (u4* )((u1* )pframe + sizeof(struct frame));
 
 				pframe->max_locals = pcode_attribute_info->max_locals;
 				pframe->max_stack = pcode_attribute_info->max_stack;
 				pframe->fp = pstack->pcurrent_frame;
 				pframe->pmethod_info = pmethod_info;
 				pframe->pclass = pclas;
-				pframe->pc = 0;
-				pframe->sp = sizeof(u4) * pframe->max_locals + sizeof(struct frame);
+				pframe->pc = pcode_attribute_info->pcode;
+				pframe->sp = pframe->pstack_start_addr;
+				if (pstack->pcurrent_frame != NULL)
+				{
+					//pstack->pcurrent_frame->sp -= parameters_size;
+					pstack->pcurrent_frame->sp = (u4* )((((u1* )(pstack->pcurrent_frame->sp)) - parameters_size));
+				}
 
 				pstack->pcurrent_frame = pframe;
-				pstack->ptop += frame_size;
+				//pstack->ptop = pstack->ptop - parameters_size + current_frame_max_size;
+				pstack->ptop = (u1* )pframe->plocals_start_addr + current_frame_max_size;
 
 				ret = OK;
 			}
@@ -84,7 +107,7 @@ u1 pop_frame(struct stack* pstack)
 {
 	int size;
 	struct frame* pframe = pstack->pcurrent_frame;
-	size = pframe->max_locals * sizeof(u4) + pframe->max_stack * sizeof(u4) + sizeof(*pframe);
+	size = pframe->max_locals * sizeof(u4) + pframe->max_stack * sizeof(u4) + sizeof(struct frame);
 
 	pstack->pcurrent_frame = pframe->fp;
 	pstack->ptop -= size;
@@ -106,28 +129,29 @@ u1 pop_frame(struct stack* pstack)
 void push_4(struct stack* pstack, void* p)
 {
 	int i;
-	struct frame* pframe = pstack->pcurrent_frame; 
-	u1* psp = (u1* )(pframe) + pframe->sp;
+	struct frame* pcurrent_frame = pstack->pcurrent_frame; 
+	u1* psp = (u1* )pcurrent_frame->sp;
 	
 	for(i = 0; i < 4; i ++)
 	{
 		*(psp + i) = *((u1* )p + i);
 	}
 
-	pframe->sp += 4;
+	pcurrent_frame->sp ++;
 }
 void push_8(struct stack* pstack, void* p)
 {
 	int i;
-	struct frame* pframe = pstack->pcurrent_frame; 
-	u1* psp = (u1* )(pframe) + pframe->sp;
+	struct frame* pcurrent_frame = pstack->pcurrent_frame; 
+	u1* psp = (u1* )pcurrent_frame->sp;
 	
 	for(i = 0; i < 8; i ++)
 	{
 		*(psp + i) = *((u1* )p + i);
 	}
 
-	pframe->sp += 8;
+	pcurrent_frame->sp ++;
+	pcurrent_frame->sp ++;
 }
 
 // attention: please use the return address to copy the popped value
@@ -136,12 +160,12 @@ void* pop_4(struct stack* pstack)
 {
 	struct frame* pframe = pstack->pcurrent_frame; 
 	pframe->sp -= 4;
-	return (u1* )pframe + pframe->sp;
+	return pframe->sp;
 }
 void* pop_8(struct stack* pstack)
 {
 	struct frame* pframe = pstack->pcurrent_frame; 
-	pframe->sp -= 4;
-	return (u1* )pframe + pframe->sp;
+	pframe->sp -= 8;
+	return pframe->sp;
 }
 

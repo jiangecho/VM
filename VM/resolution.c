@@ -7,7 +7,7 @@
 static u1 resolution_field_internal(struct Class* pclass, u1 flag, struct constant_fieldref_info* pconstant_fieldref_info, 
 	u2 class_field_start_offset, u2 instance_field_start_offset);
 static u1 resolution_field(struct Class* pclass,  struct constant_fieldref_info* pconstant_fieldref_info);
-static u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info);
+u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info);
 
 // due to have resolutioned the constant_classref_info,
 // so now we only need to resolution constant_fieldref_info, constant_methodref_info and so on
@@ -31,10 +31,12 @@ void resolution(struct Class* pclass, u2 index_in_constant_pool)
 		break;
 	case CONSTANT_Methodref:
 		pconstant_methodref_info = (struct constant_methodref_info* )pcp_info.pinfo;
+		resolution_method(pclass, pconstant_methodref_info);
 
 		break;
 	case CONSTANT_InterfaceMethodref:
 		pconstant_interfacemethodref_ino = (struct constant_interfacemethodref_info* )pcp_info.pinfo;
+		//TODO
 
 		break;
 
@@ -195,7 +197,7 @@ u1 resolution_field_internal(struct Class* pclass, u1 flag, struct constant_fiel
 
 
 //TODO now do not handle signature polymorphic method
-static u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info)
+u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info)
 {
 	int i = 0;
 	struct Class* ptmp_class;
@@ -219,7 +221,7 @@ static u1 resolution_method(struct Class* pclass, struct constant_methodref_info
 		//if ((pclass->pmethods[i].pname_constant_utf8_info == pname_constant_utf8_info)
 		//	&& (pclass->pmethods[i].pdescriptor_constant_utf8_info == pdescriptor_constant_utf8_info))
 		if (compare(pclass->pmethods[i].pname_constant_utf8_info->pbytes, pclass->pmethods[i].pname_constant_utf8_info->length, 
-				pname_constant_utf8_info, pname_constant_utf8_info->length)
+				pname_constant_utf8_info->pbytes, pname_constant_utf8_info->length)
 			&& compare(pclass->pmethods[i].pdescriptor_constant_utf8_info->pbytes, pclass->pmethods[i].pdescriptor_constant_utf8_info->length,
 				pdescriptor_constant_utf8_info->pbytes, pdescriptor_constant_utf8_info->length))
 		{

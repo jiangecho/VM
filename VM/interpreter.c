@@ -5,31 +5,41 @@
 #include "class.h"
 #include "method.h"
 
+#include "prepare.h"
+#include "resolution.h"
+
 #include <stdio.h>
 
-int pc = 0;
 static struct frame* pcurrent_frame;
 static struct stack* pcurrent_stack;
-static struct method_info* pcurrent_method_info;
-static struct code_attribute_info* pcode_attribute_info;
-static struct Class* pcurrent_class;
+//static struct method_info* pcurrent_method_info;
+//static struct code_attribute_info* pcode_attribute_info;
+//static struct Class* pcurrent_class;
 u1* pcode;
 
+static void update_current_frame()
+{
+	pcurrent_frame = pcurrent_stack->pcurrent_frame;
+}
 
 
 void set_current_stack(struct stack* pstack)
 {
 	pcurrent_stack = pstack;
 	pcurrent_frame = pstack->pcurrent_frame;
+	/*
+	pcurrent_frame = pstack->pcurrent_frame;
 	pcurrent_method_info = pcurrent_frame->pmethod_info;
 
 	pcode_attribute_info = get_code_attribute_info(pcurrent_method_info);
 	pcode = pcode_attribute_info->pcode;
+	*/
 }
 
+// implement this function as a macro
 u1 fetch()
 {
-	u1 instruction = *(pcode + pc);
+	u1 instruction = *pcurrent_frame->pc;
 	return instruction;
 }
 
@@ -37,6 +47,7 @@ void interpreter()
 {
 	struct constant_methodref_info* pconstant_methodref_info;
 	struct constant_name_and_type_info* pconstant_name_and_type_info;
+	struct Class* pclass;
 	u2 index;
 	u1 stop = 0;
 	u1 ins = fetch();
@@ -53,21 +64,48 @@ void interpreter()
 		case   ACONST_NULL:       //0x01             
 		case   ICONST_M1:         //0x02           
 		case   ICONST_0:          //0x03          
+			{
+				*((pcurrent_frame->sp ++)) = 0;
+				pcurrent_frame->pc ++;
+				break;
+
+			}
 		case   ICONST_1:          //0x04          
+			{
+				*((pcurrent_frame->sp ++)) = 0x00000001;
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   ICONST_2:          //0x05          
+			{
+				*((pcurrent_frame->sp ++)) = 0x00000002;
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   ICONST_3:          //0x06          
-			*((u1* )(pcurrent_frame + sizeof(struct frame) + pcurrent_frame->sp ++)) = 0xFF000000 & 3;
-			*((u1* )(pcurrent_frame + sizeof(struct frame) + pcurrent_frame->sp ++)) = 0x00FF0000 & 3;
-			*((u1* )(pcurrent_frame + sizeof(struct frame) + pcurrent_frame->sp ++)) = 0x0000FF00 & 3;
-			*((u1* )(pcurrent_frame + sizeof(struct frame) + pcurrent_frame->sp ++)) = 0x000000FF & 3;
-			pc ++;
-			pcurrent_frame->pc = pc;
+			{
+				*((pcurrent_frame->sp ++)) = 0x00000003;
+				pcurrent_frame->pc ++;
 
-
-			break;
+				break;
+			}
 
 		case   ICONST_4:          //0x07          
+			{
+				*((pcurrent_frame->sp ++)) = 0x00000004;
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   ICONST_5:          //0x08          
+			{
+				*((pcurrent_frame->sp ++)) = 0x00000005;
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   LCONST_0:          //0x09          
 		case   LCONST_1:          //0x0A          
 		case   FCONST_0:          //0x0B          
@@ -76,11 +114,13 @@ void interpreter()
 		case   DCONST_0:          //0x0E          
 		case   DCONST_1:          //0x0F          
 		case   BIPUSH:            //0x10        
-			*((u1* )(pcurrent_frame + sizeof(struct frame) + pcurrent_frame->sp ++)) = *(pcode + (++pc));
-			pc ++;
-			pcurrent_frame->pc = pc;
+			{
+				*(pcurrent_frame->sp) = 0x000000FF & *(++pcurrent_frame->pc);
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
 
-			break;
+				break;
+			}
 
 		case   SIPUSH:            //0x11        
 		case   LDC:               //0x12     
@@ -94,9 +134,33 @@ void interpreter()
 		case   DLOAD:             //0x18       
 		case   ALOAD:             //0x19       
 		case   ILOAD_0:           //0x1A         
+			{
+				*pcurrent_frame->sp = *(pcurrent_frame->plocals_start_addr);
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ILOAD_1:           //0x1B         
+			{
+				*pcurrent_frame->sp = *(pcurrent_frame->plocals_start_addr + 1);
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ILOAD_2:           //0x1C         
+			{
+				*pcurrent_frame->sp = *(pcurrent_frame->plocals_start_addr + 2);
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ILOAD_3:           //0x1D         
+			{
+				*pcurrent_frame->sp = *(pcurrent_frame->plocals_start_addr + 3);
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   LLOAD_0:           //0x1E         
 		case   LLOAD_1:           //0x1F         
 		case   LLOAD_2:           //0x20         
@@ -124,14 +188,44 @@ void interpreter()
 
 			//stores:
 		case   ISTORE:            //0x36        
+			{
+				*(pcurrent_frame->plocals_start_addr + *pcurrent_frame->pc) = *(--pcurrent_frame->sp);
+				pcurrent_frame->pc ++;
+				pcurrent_frame->sp ++;
+				break;
+			}
 		case   LSTORE:            //0x37        
 		case   FSTORE:            //0x38        
 		case   DSTORE:            //0x39        
 		case   ASTORE:            //0x3A        
 		case   ISTORE_0:          //0x3B          
+			{
+				*(pcurrent_frame->plocals_start_addr) = *(--pcurrent_frame->sp);
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   ISTORE_1:          //0x3C          
+			{
+				*(pcurrent_frame->plocals_start_addr + 1) = *(--pcurrent_frame->sp);
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   ISTORE_2:          //0x3D          
+			{
+				*(pcurrent_frame->plocals_start_addr + 2) = *(--pcurrent_frame->sp);
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   ISTORE_3:          //0x3E          
+			{
+				*(pcurrent_frame->plocals_start_addr + 2) = *(--pcurrent_frame->sp);
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   LSTORE_0:          //0x3F          
 		case   LSTORE_1:          //0x40          
 		case   LSTORE_2:          //0x41          
@@ -159,6 +253,11 @@ void interpreter()
 
 			//stack:
 		case   POP:               //0x57     
+			{
+				pcurrent_frame->sp --;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   POP2:              //0x58      
 		case   DUP:               //0x59     
 		case   DUP_X1:            //0x5A        
@@ -170,6 +269,15 @@ void interpreter()
 
 			//math:
 		case   IADD:              //0x60      
+			{
+				int value1 = *(--pcurrent_frame->sp);
+				int value2 = *(--pcurrent_frame->sp);
+
+				*(pcurrent_frame->sp ++) = value1 + value2;
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   LADD:              //0x61      
 		case   FADD:              //0x62      
 		case   DADD:              //0x63      
@@ -252,11 +360,37 @@ void interpreter()
 		case   TABLESWITCH:       //0xAA             
 		case   LOOKUPSWITCH:      //0xAB              
 		case   IRETURN:           //0xAC         
+			{
+				*(pcurrent_frame->fp->sp) = *(--pcurrent_frame->sp);
+				printf("ireturn: %d\n", *(pcurrent_frame->fp->sp));
+				pcurrent_frame->fp->sp ++;
+				pcurrent_frame->pc ++;
+
+				pop_frame(pcurrent_stack);
+				update_current_frame();
+
+
+				break;
+			}
 		case   LRETURN:           //0xAD         
 		case   FRETURN:           //0xAE         
 		case   DRETURN:           //0xAF         
 		case   ARETURN:           //0xB0         
 		case   RETURN:            //0xB1        
+			{
+
+				pop_frame(pcurrent_stack);
+				update_current_frame();
+
+				if (pcurrent_frame == NULL)
+				{
+					return;
+				}
+				else
+				{
+					break;
+				}
+			}
 
 			//reference:
 		case   GETSTATIC:         //0xB2           
@@ -266,15 +400,40 @@ void interpreter()
 		case   INVOKEVIRTUAL:     //0xB6               
 		case   INVOKESPECIAL:     //0xB7               
 		case   INVOKESTATIC:      //0xB8              
+			{
+				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				pconstant_methodref_info = (struct constant_methodref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+				
+				pclass = pconstant_methodref_info->pclass;
+				if (pclass == NULL)
+				{
+					// TODO can not find method
+				}
+				else
+				{
+					// the class has not been prepared
+					if (pclass->status < CLASS_PREPARED)
+					{
+						prepare(pclass);
+					}
 
-			//TODO
-			index = (((*(pcode + (++pc))) << 8) & 0xFF00) | (*(pcode + (++pc)) & 0x00FF);
-			pc ++;
-			pcurrent_frame->pc = pc;
+					// the constant pool entry has not been resolved
+					if (pconstant_methodref_info->pmethod_info == NULL)
+					{
+						resolution_method(pclass, pconstant_methodref_info);
+					}
 
-			pconstant_methodref_info = (struct constant_methodref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
-			
-			break;
+					// TODO do more check here: is native, abstract and so on?
+
+					pcurrent_frame->pc ++;
+					push_frame(pcurrent_stack, pclass, pconstant_methodref_info->pmethod_info);
+
+					update_current_frame();
+					
+				}
+
+				break;
+			}
 
 		case   INVOKEINTERFACE:   //0xB9                 
 		case   INVOKEDYNAMIC:     //0xBA               

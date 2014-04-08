@@ -8,16 +8,17 @@ struct frame
 	u2 max_locals;
 	u2 max_stack;
 
+	u4* pstack_start_addr;
+	u4* plocals_start_addr;
+
 	// pointer to the previous frame
 	struct frame* fp;
 
-	// the offset of the current opcode
-	u2 pc;
+	// point to the next opcode to execute
+	u1* pc;
 
-	// the offset(related to the start address of this frame) of the current frame stack
-	u2 sp;
-
-	//u2 method_index_in_constant_pool;
+	// point to the top of the current frame
+	u4* sp;
 
 	//TODO optimize 
 	struct method_info* pmethod_info;

@@ -50,7 +50,6 @@ static void prepare_internal(struct Class* pclass, Class_instance* pclass_instan
 {
 	int i, j, index;
 	u2 offset = 0;
-	u2 field_size;
 	struct field_info field_info;
 	struct attribute_info attribute_info;
 	struct constant_integer_info* pconstant_integer_info;

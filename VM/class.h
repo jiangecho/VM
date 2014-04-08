@@ -300,7 +300,8 @@ void constant_class_info2class_name_entry(struct Class* pclass, struct constant_
 // return the start index of the class name(do no include the package name and the last '/')
 u2 get_class_name_start_index(struct class_name_entry* pclass_name_entry);
 
-struct method_info* find_method(char* class_name, u2 class_name_len, char* method_name, u2 method_name_len);
+struct method_info* find_method(u1* class_name, u2 class_name_len, u1* method_name, u2 method_name_len,
+	u1* method_descriptor, u2 method_descriptor_len);
 
 struct Class* find_class(char* pclass_name, u2 class_name_len);
 
