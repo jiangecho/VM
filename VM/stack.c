@@ -87,7 +87,7 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 				if (pstack->pcurrent_frame != NULL)
 				{
 					//pstack->pcurrent_frame->sp -= parameters_size;
-					pstack->pcurrent_frame->sp = (u4* )((((u1* )(pstack->pcurrent_frame->sp)) - parameters_size));
+					pstack->pcurrent_frame->sp = (u4* )(((u1* )(pstack->pcurrent_frame->sp)) - parameters_size);
 				}
 
 				pstack->pcurrent_frame = pframe;
@@ -105,12 +105,17 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 
 u1 pop_frame(struct stack* pstack)
 {
-	int size;
-	struct frame* pframe = pstack->pcurrent_frame;
-	size = pframe->max_locals * sizeof(u4) + pframe->max_stack * sizeof(u4) + sizeof(struct frame);
+	pstack->pcurrent_frame = pstack->pcurrent_frame->fp;
 
-	pstack->pcurrent_frame = pframe->fp;
-	pstack->ptop -= size;
+	if (pstack->pcurrent_frame != NULL)
+	{
+		pstack->ptop = (u1* )pstack->pcurrent_frame->sp;
+	}
+	else
+	{
+		pstack->ptop = pstack->pbottom;
+	}
+
 
 	// while pstack->ptop == pstack->pbottom, it means that it is the end of current thread(there is not
 	// any more bytecode to interpreter).
