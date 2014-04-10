@@ -64,8 +64,8 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 
 				if (pstack->ptop != pstack->pbottom)
 				{
-					pframe = (struct frame* )(pstack->ptop - parameters_size + pcode_attribute_info->max_locals * sizeof(u4));
-					pframe->plocals_start_addr = (u4* )(pstack->ptop - parameters_size);
+					pframe = (struct frame* )(((u1* )pstack->pcurrent_frame->sp) - parameters_size + pcode_attribute_info->max_locals * sizeof(u4));
+					pframe->plocals_start_addr = (u4* )(((u1* )pstack->pcurrent_frame->sp) - parameters_size);
 				}
 				else
 				{
@@ -105,11 +105,12 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 
 u1 pop_frame(struct stack* pstack)
 {
+	struct frame* pcurrent_frame = pstack->pcurrent_frame;
 	pstack->pcurrent_frame = pstack->pcurrent_frame->fp;
 
 	if (pstack->pcurrent_frame != NULL)
 	{
-		pstack->ptop = (u1* )pstack->pcurrent_frame->sp;
+		pstack->ptop = (u1* )pcurrent_frame->plocals_start_addr + get_parameters_size(pcurrent_frame->pmethod_info);
 	}
 	else
 	{
