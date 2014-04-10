@@ -129,6 +129,13 @@ void interpreter()
 
 			//loads:
 		case   ILOAD:             //0x15       
+			{
+				u1 index = *(++ pcurrent_frame->pc);
+				*pcurrent_frame->sp = *(pcurrent_frame->plocals_start_addr + index);
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   LLOAD:             //0x16       
 		case   FLOAD:             //0x17       
 		case   DLOAD:             //0x18       
@@ -189,7 +196,7 @@ void interpreter()
 			//stores:
 		case   ISTORE:            //0x36        
 			{
-				*(pcurrent_frame->plocals_start_addr + *pcurrent_frame->pc) = *(--pcurrent_frame->sp);
+				*(pcurrent_frame->plocals_start_addr + *(++ pcurrent_frame->pc)) = *(--pcurrent_frame->sp);
 				pcurrent_frame->pc ++;
 				pcurrent_frame->sp ++;
 				break;
