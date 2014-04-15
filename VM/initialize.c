@@ -56,13 +56,16 @@ u1 initialize(struct Class* pclass, struct stack* pstack)
 		}
 
 	}
+
+	pmethod_info = find_class_method(pclass, "<clinit>", strlen("<clinit>"), "()V", strlen("()V"));
+	if (pmethod_info)
+	{
+		pclass->status = CLASS_INITIALIZING;
+		push_frame(pstack, pclass, pmethod_info, update_current_frame);
+	}
 	else
 	{
-		pmethod_info = find_class_method(pclass, "<clinit>", strlen("<clinit>"), "()V", strlen("()V"));
-		if (pmethod_info)
-		{
-			push_frame(pstack, pcur_class, pmethod_info, update_current_frame);
-		}
+		pclass->status = CLASS_INITIALIZED;
 	}
 	
 	return OK;

@@ -36,17 +36,19 @@ void remove_object(Object* pobject)
 	free_heap(pobject);
 }
 
+// do not include the fields inherited from the super classes
 Class_instance* create_class_instance(struct Class* pclass)
 {
 	u4 size;
 	Class_instance* pclass_instance = NULL;
 
-	size = sizeof(Class_instance) + get_class_total_fields_size(pclass);
+	//size = sizeof(Class_instance) + get_class_total_fields_size(pclass);
+	size = sizeof(Class_instance) + pclass->class_fields_size;
 	pclass_instance = (Class_instance* )malloc_heap(size);
 
 	if (pclass_instance)
 	{
-		pclass_instance->fields_size = size - sizeof(Class_instance);
+		pclass_instance->fields_size = pclass->class_fields_size;
 		pclass_instance->pclass = pclass;
 		pclass_instance->pvalues = (u1* )pclass_instance + sizeof(Class_instance);
 

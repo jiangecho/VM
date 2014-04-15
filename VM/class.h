@@ -74,6 +74,10 @@ struct constant_class_info{
 struct constant_fieldref_info{
 	union{
 		u2 class_index;
+
+		// will be set the the constant pool is linked
+		// for class fields, the pclass will be set to the class which actually declared this field 
+		// when this fieldref is resolved
 		struct Class* pclass;
 	};
 

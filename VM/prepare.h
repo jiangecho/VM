@@ -3,6 +3,6 @@
 
 #include "def.h"
 #include "class.h"
-u1 prepare(struct Class* pclass);
+void prepare(struct Class* pclass);
 #endif
 
