@@ -63,6 +63,9 @@
     <ClCompile Include="prepare.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="initialize.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="log.h">
@@ -120,6 +123,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="prepare.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="initialize.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -78,6 +78,7 @@
     <ClCompile Include="class.c" />
     <ClCompile Include="classloader.c" />
     <ClCompile Include="heap.c" />
+    <ClCompile Include="initialize.c" />
     <ClCompile Include="interpreter.c" />
     <ClCompile Include="linker.c" />
     <ClCompile Include="memory.c" />
@@ -97,6 +98,7 @@
     <ClInclude Include="def.h" />
     <ClInclude Include="frame.h" />
     <ClInclude Include="heap.h" />
+    <ClInclude Include="initialize.h" />
     <ClInclude Include="interpreter.h" />
     <ClInclude Include="linker.h" />
     <ClInclude Include="log.h" />
