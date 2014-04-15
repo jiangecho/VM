@@ -64,6 +64,10 @@ void interpreter()
 		{
 			//Constants
 		case   NOP:               //0x00     
+			{
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ACONST_NULL:       //0x01             
 		case   ICONST_M1:         //0x02           
 		case   ICONST_0:          //0x03          
@@ -414,6 +418,34 @@ void interpreter()
 			//reference:
 		case   GETSTATIC:         //0xB2           
 			{
+				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				pconstant_field_info = (struct constant_fieldref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+
+				// pclass have been resolved when the class is linked
+				if (pconstant_field_info->pclass->status < CLASS_PREPARED)
+				{
+					prepare(pconstant_field_info->pclass);
+				}
+
+				if (pconstant_field_info->offset == 0xFFFF)
+				{
+					resolution_field(pconstant_field_info);
+				}
+
+				if (pconstant_field_info->pclass->status < CLASS_INITIALIZING)
+				{
+					// attention: need to re-interpret the GETSTATIC instruction
+					pcurrent_frame->pc = pcurrent_frame->pc - 2;
+					initialize(pconstant_field_info->pclass, pcurrent_stack);
+				}
+				else
+				{
+					//TODO now only support int(for test), need more support
+					*pcurrent_frame->sp = *(u4* )((u1* )pconstant_field_info->pclass->pclass_instance->pvalues + pconstant_field_info->offset);
+					pcurrent_frame->sp ++;
+					pcurrent_frame->pc ++;
+				}
+
 
 				break;
 			}
@@ -428,24 +460,25 @@ void interpreter()
 					prepare(pconstant_field_info->pclass);
 				}
 
-				if (pconstant_field_info->offset = 0xFFFF)
+				if (pconstant_field_info->offset == 0xFFFF)
 				{
-					resolution_field(pclass, pconstant_field_info);
+					resolution_field(pconstant_field_info);
 				}
 
 				if (pconstant_field_info->pclass->status < CLASS_INITIALIZING)
 				{
-					// attention: need to re-interpret this instruction
-					pcurrent_frame->pc = pcurrent_frame->pc - 3;
+					// attention: need to re-interpret the PUTSTATIC instruction
+					pcurrent_frame->pc = pcurrent_frame->pc - 2;
 					initialize(pconstant_field_info->pclass, pcurrent_stack);
 				}
 				else
 				{
 					//TODO now only support int(for test), need more support
 					*(u4* )((u1* )pcurrent_frame->pclass->pclass_instance->pvalues + pconstant_field_info->offset) = *(--pcurrent_frame->sp);
+					pcurrent_frame->sp --;
+					pcurrent_frame->pc ++;
 				}
 
-				pcurrent_frame->pc ++;
 
 				break;
 			}
