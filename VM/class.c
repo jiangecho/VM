@@ -91,17 +91,9 @@ struct method_info* find_method(u1* class_name, u2 class_name_len, u1* method_na
 	extern struct class_entry *(loaded_class_table[CLASS_TABLE_SIZE]);
 	struct class_entry* pclass_entry;
 	struct Class* pclass;
-	struct cp_info* pcp_info;
-	struct constant_utf8_info* pconstant_utf8_info;
-	struct constant_class_info* pconstant_class_info;
-	struct method_info* pmethods;
 	struct method_info* pmethod = NULL;
 
 	u2 class_name_hash = hash(class_name, class_name_len, CLASS_TABLE_SIZE);
-	u2 class_index;
-	u2 class_name_index;
-
-	int i;
 
 	pclass_entry = loaded_class_table[class_name_hash];
 	if (pclass_entry != NULL)
@@ -113,50 +105,10 @@ struct method_info* find_method(u1* class_name, u2 class_name_len, u1* method_na
 
 			if (compare(class_name, strlen(class_name), pclass_entry->pclass_name_entry->pname, pclass_entry->pclass_name_entry->name_len))
 			{
-				if (pclass->status >= CLASS_LINKED)
-				{
-					for (i = 0; i < pclass->method_count; i ++)
-					{
-						pconstant_utf8_info = pclass->pmethods[i].pname_constant_utf8_info;
-						if (compare(method_name, method_name_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
-						{
-							pconstant_utf8_info = pclass->pmethods[i].pdescriptor_constant_utf8_info;
-							if (compare(method_descriptor, method_descriptor_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
-							{
-								pmethod = &(pclass->pmethods[i]);
-								
-								goto found;
-							}
-						}
-					}
-				}
-				else
-				{
-					class_index= pclass->this_class;
-					pcp_info = pclass->pcp_info;
-					pmethods = pclass->pmethods;
-
-					pconstant_class_info = (struct constant_class_info* )pcp_info[class_index].pinfo;
-					class_name_index = pconstant_class_info->name_index;
-
-					pconstant_utf8_info = (struct constant_utf8_info* )pcp_info[class_name_index].pinfo;
-
-					for (i = 0; i < pclass->method_count; i ++)
-					{
-						pconstant_utf8_info = (struct constant_utf8_info* )pcp_info[pmethods[i].name_index].pinfo;
-						if (compare(method_name, method_name_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
-						{
-							pconstant_utf8_info = (struct constant_utf8_info*)pcp_info[pmethods[i].descriptor_index].pinfo;
-							if (compare(method_descriptor, method_descriptor_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
-							{
-								pmethod = &(pmethods[i]);
-
-								goto found;
-							}
-						}
-					}
-				}
+				pmethod = find_class_method(pclass, method_name, method_name_len, method_descriptor, method_descriptor_len);
+				break;
 			}
+			
 			else
 			{
 				pclass_entry = pclass_entry->next;
@@ -165,10 +117,60 @@ struct method_info* find_method(u1* class_name, u2 class_name_len, u1* method_na
 		}
 	}
 
+	return pmethod;
+
+}
+
+struct method_info* find_class_method(struct Class* pclass, u1* method_name, u2 method_name_len,
+	u1* method_descriptor, u2 method_descriptor_len)
+{
+	int i;
+	struct constant_utf8_info* pconstant_utf8_info;
+	struct cp_info* pcp_info;
+	struct method_info* pmethods;
+	struct method_info* pmethod = NULL;
+
+	if (pclass->status >= CLASS_LINKED)
+	{
+		for (i = 0; i < pclass->method_count; i ++)
+		{
+			pconstant_utf8_info = pclass->pmethods[i].pname_constant_utf8_info;
+			if (compare(method_name, method_name_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
+			{
+				pconstant_utf8_info = pclass->pmethods[i].pdescriptor_constant_utf8_info;
+				if (compare(method_descriptor, method_descriptor_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
+				{
+					pmethod = &(pclass->pmethods[i]);
+					
+					goto found;
+				}
+			}
+		}
+	}
+	else
+	{
+		pcp_info = pclass->pcp_info;
+		pmethods = pclass->pmethods;
+
+		for (i = 0; i < pclass->method_count; i ++)
+		{
+			pconstant_utf8_info = (struct constant_utf8_info* )pcp_info[pmethods[i].name_index].pinfo;
+			if (compare(method_name, method_name_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
+			{
+				pconstant_utf8_info = (struct constant_utf8_info*)pcp_info[pmethods[i].descriptor_index].pinfo;
+				if (compare(method_descriptor, method_descriptor_len, pconstant_utf8_info->pbytes, pconstant_utf8_info->length))
+				{
+					pmethod = &(pmethods[i]);
+
+					goto found;
+				}
+			}
+		}
+	}
+
 found:
 
 	return pmethod;
-
 }
 
 struct Class* find_class(char* pclass_name, u2 class_name_len)

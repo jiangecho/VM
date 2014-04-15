@@ -2,6 +2,7 @@
 #include "heap.h"
 #include "class.h"
 #include "utils.h"
+#include "object.h"
 
 #include <stdio.h>
 
@@ -22,6 +23,7 @@ u1 prepare(struct Class* pclass)
 {
 	u2 size;
 	Class_instance* pclass_instance = NULL;
+	struct Class* psuper_class = pclass->psuper_class;
 
 	if ((pclass->status != CLASS_LINKED)
 		|| pclass->status > CLASS_PREPARED) 
@@ -30,18 +32,23 @@ u1 prepare(struct Class* pclass)
 	}
 
 
-	size = sizeof(Class_instance) + pclass->class_total_fields_size;
-	pclass_instance = (Class_instance* )malloc_heap(size);
+	//size = sizeof(Class_instance) + pclass->class_total_fields_size;
+
+	// the current class's class fields has been set to the default vales in the malloc_heap function
+	pclass_instance = create_class_instance(pclass);
 
 	if (pclass_instance)
 	{
-		pclass_instance->fields_size = pclass->class_total_fields_size;
-		pclass_instance->pclass = pclass;
-		pclass->pclass_instance = pclass_instance;
 		prepare_internal(pclass, pclass_instance, 0, 1);
 	}
 
 	pclass->status = CLASS_PREPARED;
+
+	while(psuper_class)
+	{
+		prepare(psuper_class);
+		psuper_class = psuper_class->psuper_class;
+	}
 
 	return OK;
 }
@@ -58,11 +65,12 @@ static void prepare_internal(struct Class* pclass, Class_instance* pclass_instan
 
 
 
-	// set the current class's class fields to the default vales
+	// set the final static fields to constant values
+	// so in the initialization procedure, we do not need to set the values any more
 	for (i = 0; i < pclass->fields_count; i ++)
 	{
 		field_info = pclass->pfields[i];
-		if (mask(field_info.access_flags, ACC_STATIC))
+		if (mask(field_info.access_flags, ACC_STATIC) && mask(field_info.access_flags, ACC_FINAL))
 		{
 			/*
 			if (flag == 1)
@@ -97,8 +105,9 @@ static void prepare_internal(struct Class* pclass, Class_instance* pclass_instan
 						// attention can not use field_info.offset as the offset here
 						// because the field_info.offset include the private field
 
+						//TODO now only support int value
 						// TODO fix bug?: big endian
-						*((int* )((u1* )pclass_instance + sizeof(Class_instance) + current_class_field_start_offset + offset)) = pconstant_integer_info->value;
+						*((int* )((u1* )pclass_instance->pvalues + current_class_field_start_offset + offset)) = pconstant_integer_info->value;
 					}
 
 				}

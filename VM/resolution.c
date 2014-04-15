@@ -6,11 +6,11 @@
 
 static u1 resolution_field_internal(struct Class* pclass, u1 flag, struct constant_fieldref_info* pconstant_fieldref_info, 
 	u2 class_field_start_offset, u2 instance_field_start_offset);
-static u1 resolution_field(struct Class* pclass,  struct constant_fieldref_info* pconstant_fieldref_info);
+u1 resolution_field(struct Class* pclass,  struct constant_fieldref_info* pconstant_fieldref_info);
 u1 resolution_method(struct Class* pclass, struct constant_methodref_info* pconstant_methodref_info);
 
-// due to have resolutioned the constant_classref_info,
-// so now we only need to resolution constant_fieldref_info, constant_methodref_info and so on
+// due to have resolved the constant_classref_info,
+// so now we only need to resolve constant_fieldref_info, constant_methodref_info and so on
 void resolution(struct Class* pclass, u2 index_in_constant_pool)
 {
 	struct constant_fieldref_info* pconstant_fieldref_info;

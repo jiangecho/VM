@@ -53,7 +53,8 @@
 #define CLASS_LOADED      1
 #define CLASS_LINKED      2
 #define CLASS_PREPARED 3
-#define CLASS_INITIALIZATION 4
+#define CLASS_INITIALIZING 4
+#define CLASS_INITIALIZED  5
 
 #define CLASS_FIELD       0
 #define INSTANCE_FIELD    1
@@ -301,6 +302,9 @@ void constant_class_info2class_name_entry(struct Class* pclass, struct constant_
 u2 get_class_name_start_index(struct class_name_entry* pclass_name_entry);
 
 struct method_info* find_method(u1* class_name, u2 class_name_len, u1* method_name, u2 method_name_len,
+	u1* method_descriptor, u2 method_descriptor_len);
+
+struct method_info* find_class_method(struct Class* pclass, u1* method_name, u2 method_name_len,
 	u1* method_descriptor, u2 method_descriptor_len);
 
 struct Class* find_class(char* pclass_name, u2 class_name_len);

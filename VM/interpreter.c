@@ -7,6 +7,7 @@
 
 #include "prepare.h"
 #include "resolution.h"
+#include "initialize.h"
 
 #include <stdio.h>
 
@@ -17,7 +18,7 @@ static struct stack* pcurrent_stack;
 //static struct Class* pcurrent_class;
 u1* pcode;
 
-static void update_current_frame()
+void update_current_frame()
 {
 	pcurrent_frame = pcurrent_stack->pcurrent_frame;
 }
@@ -46,7 +47,9 @@ u1 fetch()
 void interpreter()
 {
 	struct constant_methodref_info* pconstant_methodref_info;
+	struct constant_fieldref_info* pconstant_field_info;
 	struct constant_name_and_type_info* pconstant_name_and_type_info;
+	struct constant_class_info* pconstant_class_info;
 	struct Class* pclass;
 	u2 index;
 	u1 stop = 0;
@@ -267,6 +270,13 @@ void interpreter()
 			}
 		case   POP2:              //0x58      
 		case   DUP:               //0x59     
+			{
+				*(pcurrent_frame->sp) = *(pcurrent_frame->sp - 1);
+
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   DUP_X1:            //0x5A        
 		case   DUP_X2:            //0x5B        
 		case   DUP2:              //0x5C      
@@ -368,13 +378,16 @@ void interpreter()
 		case   LOOKUPSWITCH:      //0xAB              
 		case   IRETURN:           //0xAC         
 			{
+				// TODO check whether current method is clinit or not
+				// and set class's status
+
 				*(pcurrent_frame->fp->sp) = *(--pcurrent_frame->sp);
 				printf("ireturn: %d\n", *(pcurrent_frame->fp->sp));
 				pcurrent_frame->fp->sp ++;
 				pcurrent_frame->pc ++;
 
-				pop_frame(pcurrent_stack);
-				update_current_frame();
+				pop_frame(pcurrent_stack, update_current_frame);
+				//update_current_frame();
 
 
 				break;
@@ -386,22 +399,56 @@ void interpreter()
 		case   RETURN:            //0xB1        
 			{
 
-				pop_frame(pcurrent_stack);
-				update_current_frame();
-
-				if (pcurrent_frame == NULL)
+				pcurrent_frame->pc ++;
+				if (pop_frame(pcurrent_stack, update_current_frame))
 				{
-					return;
+					break;
 				}
 				else
 				{
-					break;
+					return;
+
 				}
 			}
 
 			//reference:
 		case   GETSTATIC:         //0xB2           
+			{
+
+				break;
+			}
 		case   PUTSTATIC:         //0xB3           
+			{
+				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				pconstant_field_info = (struct constant_fieldref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+
+				// pclass have been resolved when the class is linked
+				if (pconstant_field_info->pclass->status < CLASS_PREPARED)
+				{
+					prepare(pconstant_field_info->pclass);
+				}
+
+				if (pconstant_field_info->offset = 0xFFFF)
+				{
+					resolution_field(pclass, pconstant_field_info);
+				}
+
+				if (pconstant_field_info->pclass->status < CLASS_INITIALIZING)
+				{
+					// attention: need to re-interpret this instruction
+					pcurrent_frame->pc = pcurrent_frame->pc - 3;
+					initialize(pconstant_field_info->pclass, pcurrent_stack);
+				}
+				else
+				{
+					//TODO now only support int(for test), need more support
+					*(u4* )((u1* )pcurrent_frame->pclass->pclass_instance->pvalues + pconstant_field_info->offset) = *(--pcurrent_frame->sp);
+				}
+
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   GETFIELD:          //0xB4          
 		case   PUTFIELD:          //0xB5          
 		case   INVOKEVIRTUAL:     //0xB6               
@@ -429,13 +476,17 @@ void interpreter()
 					{
 						resolution_method(pclass, pconstant_methodref_info);
 					}
-
+					
 					// TODO do more check here: is native, abstract and so on?
-
 					pcurrent_frame->pc ++;
-					push_frame(pcurrent_stack, pclass, pconstant_methodref_info->pmethod_info);
+					push_frame(pcurrent_stack, pclass, pconstant_methodref_info->pmethod_info, update_current_frame);
+					//update_current_frame();
 
-					update_current_frame();
+					//TODO initialize the class
+					if (pclass->status < CLASS_INITIALIZING)
+					{
+						initialize(pclass, pcurrent_stack);
+					}
 					
 				}
 
@@ -445,6 +496,15 @@ void interpreter()
 		case   INVOKEINTERFACE:   //0xB9                 
 		case   INVOKEDYNAMIC:     //0xBA               
 		case   NEW:               //0xBB     
+			{
+				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				// TODO can not use pclass directly
+				pconstant_class_info = (struct constant_class_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+
+				//TODO check whether the resolved class is an interface or not?
+
+				break;
+			}
 		case   NEWARRAY:          //0xBC          
 		case   ANEWARRAY:         //0xBD           
 		case   ARRAYLENGTH:       //0xBE             

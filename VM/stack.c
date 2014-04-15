@@ -33,7 +33,7 @@ void uninit_stack(struct stack* pstack)
 }
 
 // TODO the next method's local variables overlap current method's operand stack
-u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pmethod_info)
+u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pmethod_info, void (*pcallback)())
 {
 	//TODO parse the method_info to find out the size of the frame
 	int i;
@@ -94,6 +94,10 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 				//pstack->ptop = pstack->ptop - parameters_size + current_frame_max_size;
 				pstack->ptop = (u1* )pframe->plocals_start_addr + current_frame_max_size;
 
+				if (pcallback)
+				{
+					pcallback();
+				}
 				ret = OK;
 			}
 			
@@ -103,7 +107,7 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 	return ret;
 }
 
-u1 pop_frame(struct stack* pstack)
+u1 pop_frame(struct stack* pstack, void (*pcallback)())
 {
 	struct frame* pcurrent_frame = pstack->pcurrent_frame;
 	pstack->pcurrent_frame = pstack->pcurrent_frame->fp;
@@ -122,6 +126,10 @@ u1 pop_frame(struct stack* pstack)
 	// any more bytecode to interpreter).
 	if (pstack->ptop > pstack->pbottom)
 	{
+		if (pcallback != NULL)
+		{
+			pcallback();
+		}
 		return OK;
 	}
 	else

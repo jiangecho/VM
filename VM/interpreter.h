@@ -5,6 +5,7 @@
 
 
 void set_current_stack(struct stack* pstack);
+void update_current_frame();
 void interpreter();
 
 #endif

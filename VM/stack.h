@@ -31,10 +31,10 @@ struct stack
 struct stack* init_stack(u4 size);
 //TODO
 void uninit_stack(struct stack* pstack);
-u1 push_frame(struct stack* pstack, struct Class* pclass, struct method_info* pmethod_info);
+u1 push_frame(struct stack* pstack, struct Class* pclass, struct method_info* pmethod_info, void (*pcallback)());
 
 // when the return value is FAIL, the current interpreter should be ended
-u1 pop_frame(struct stack* pstack);
+u1 pop_frame(struct stack* pstack, void (*pcallback)());
 
 // attention: copy value from the p pointing address to the stack
 void push_4(struct stack* pstack, void* p);

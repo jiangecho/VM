@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+Object *(object_table[OBJECT_TABLE_SIZE]) = {NULL};
+
 // when the return value is NULL, trigger GC and have another try
 Object* create_object(struct Class* pclass)
 {
@@ -17,6 +19,7 @@ Object* create_object(struct Class* pclass)
 		pobject->fields_size = size - sizeof(Object);
 		pobject->pclass = pclass;
 		pobject->ref_count = 0;
+		pobject->pvalues = (u1* )pobject + sizeof(Object);
 	}
 	else
 	{
@@ -45,6 +48,9 @@ Class_instance* create_class_instance(struct Class* pclass)
 	{
 		pclass_instance->fields_size = size - sizeof(Class_instance);
 		pclass_instance->pclass = pclass;
+		pclass_instance->pvalues = (u1* )pclass_instance + sizeof(Class_instance);
+
+		pclass->pclass_instance = pclass_instance;
 	}
 	else
 	{
@@ -62,3 +68,26 @@ void remove_class_instance(Class_instance* pclass_instance)
 	free_heap(pclass_instance);
 }
 
+
+// TODO optimize this function
+void add_object_to_object_table(Object* pobject)
+{
+	int i;
+	for (i = 0; i < OBJECT_TABLE_SIZE; i ++)
+	{
+		if (object_table[i] == NULL)
+		{
+			break;
+		}
+	}
+
+	if (i < OBJECT_TABLE_SIZE)
+	{
+		object_table[i] = pobject;
+	}
+	else
+	{
+		printf("error: the object table is full\n");
+	}
+
+}

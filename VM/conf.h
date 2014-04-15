@@ -5,6 +5,7 @@
 #define MAX_HEAP_SIZE      1024*1024
 #define JRE_LIB_PATH "./java_lib/"
 #define CLASS_TABLE_SIZE 256
+#define OBJECT_TABLE_SIZE 1024
 #define MAX_CLASS_NAME_AND_PAHT_LEN 256
 
 
