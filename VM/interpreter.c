@@ -69,7 +69,13 @@ void interpreter()
 				break;
 			}
 		case   ACONST_NULL:       //0x01             
+			{
+				goto unsupport;
+			}
 		case   ICONST_M1:         //0x02           
+			{
+				goto unsupport;
+			}
 		case   ICONST_0:          //0x03          
 			{
 				*((pcurrent_frame->sp ++)) = 0;
@@ -114,12 +120,33 @@ void interpreter()
 				break;
 			}
 		case   LCONST_0:          //0x09          
+			{
+				goto unsupport;
+			}
 		case   LCONST_1:          //0x0A          
+			{
+				goto unsupport;
+			}
 		case   FCONST_0:          //0x0B          
+			{
+				goto unsupport;
+			}
 		case   FCONST_1:          //0x0C          
+			{
+				goto unsupport;
+			}
 		case   FCONST_2:          //0x0D          
+			{
+				goto unsupport;
+			}
 		case   DCONST_0:          //0x0E          
+			{
+				goto unsupport;
+			}
 		case   DCONST_1:          //0x0F          
+			{
+				goto unsupport;
+			}
 		case   BIPUSH:            //0x10        
 			{
 				*(pcurrent_frame->sp) = 0x000000FF & *(++pcurrent_frame->pc);
@@ -138,7 +165,13 @@ void interpreter()
 				break;
 			}
 		case   LDC:               //0x12     
+			{
+				goto unsupport;
+			}
 		case   LDC_W:             //0x13       
+			{
+				goto unsupport;
+			}
 		case   LDC2_W:            //0x14        
 
 			//loads:
@@ -151,9 +184,21 @@ void interpreter()
 				break;
 			}
 		case   LLOAD:             //0x16       
+			{
+				goto unsupport;
+			}
 		case   FLOAD:             //0x17       
+			{
+				goto unsupport;
+			}
 		case   DLOAD:             //0x18       
+			{
+				goto unsupport;
+			}
 		case   ALOAD:             //0x19       
+			{
+				goto unsupport;
+			}
 		case   ILOAD_0:           //0x1A         
 			{
 				*pcurrent_frame->sp = *(pcurrent_frame->plocals_start_addr);
@@ -183,17 +228,53 @@ void interpreter()
 				break;
 			}
 		case   LLOAD_0:           //0x1E         
+			{
+				goto unsupport;
+			}
 		case   LLOAD_1:           //0x1F         
+			{
+				goto unsupport;
+			}
 		case   LLOAD_2:           //0x20         
+			{
+				goto unsupport;
+			}
 		case   LLOAD_3:           //0x21         
+			{
+				goto unsupport;
+			}
 		case   FLOAD_0:           //0x22         
+			{
+				goto unsupport;
+			}
 		case   FLOAD_1:           //0x23         
+			{
+				goto unsupport;
+			}
 		case   FLOAD_2:           //0x24         
+			{
+				goto unsupport;
+			}
 		case   FLOAD_3:           //0x25         
+			{
+				goto unsupport;
+			}
 		case   DLOAD_0:           //0x26         
+			{
+				goto unsupport;
+			}
 		case   DLOAD_1:           //0x27         
+			{
+				goto unsupport;
+			}
 		case   DLOAD_2:           //0x28         
+			{
+				goto unsupport;
+			}
 		case   DLOAD_3:           //0x29         
+			{
+				goto unsupport;
+			}
 		case   ALOAD_0:           //0x2A         
 			{
 				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr);
@@ -231,12 +312,33 @@ void interpreter()
 				break;
 			}
 		case   IALOAD:            //0x2E        
+			{
+				goto unsupport;
+			}
 		case   LALOAD:            //0x2F        
+			{
+				goto unsupport;
+			}
 		case   FALOAD:            //0x30        
+			{
+				goto unsupport;
+			}
 		case   DALOAD:            //0x31        
+			{
+				goto unsupport;
+			}
 		case   AALOAD:            //0x32        
+			{
+				goto unsupport;
+			}
 		case   BALOAD:            //0x33        
+			{
+				goto unsupport;
+			}
 		case   CALOAD:            //0x34        
+			{
+				goto unsupport;
+			}
 		case   SALOAD:            //0x35        
 
 			//stores:
@@ -248,9 +350,21 @@ void interpreter()
 				break;
 			}
 		case   LSTORE:            //0x37        
+			{
+				goto unsupport;
+			}
 		case   FSTORE:            //0x38        
+			{
+				goto unsupport;
+			}
 		case   DSTORE:            //0x39        
+			{
+				goto unsupport;
+			}
 		case   ASTORE:            //0x3A        
+			{
+				goto unsupport;
+			}
 		case   ISTORE_0:          //0x3B          
 			{
 				*(pcurrent_frame->plocals_start_addr) = *(--pcurrent_frame->sp);
@@ -280,17 +394,53 @@ void interpreter()
 				break;
 			}
 		case   LSTORE_0:          //0x3F          
+			{
+				goto unsupport;
+			}
 		case   LSTORE_1:          //0x40          
+			{
+				goto unsupport;
+			}
 		case   LSTORE_2:          //0x41          
+			{
+				goto unsupport;
+			}
 		case   LSTORE_3:          //0x42          
+			{
+				goto unsupport;
+			}
 		case   FSTORE_0:          //0x43          
+			{
+				goto unsupport;
+			}
 		case   FSTORE_1:          //0x44          
+			{
+				goto unsupport;
+			}
 		case   FSTORE_2:          //0x45          
+			{
+				goto unsupport;
+			}
 		case   FSTORE_3:          //0x46          
+			{
+				goto unsupport;
+			}
 		case   DSTORE_0:          //0x47          
+			{
+				goto unsupport;
+			}
 		case   DSTORE_1:          //0x48          
+			{
+				goto unsupport;
+			}
 		case   DSTORE_2:          //0x49          
+			{
+				goto unsupport;
+			}
 		case   DSTORE_3:          //0x4A          
+			{
+				goto unsupport;
+			}
 		case   ASTORE_0:          //0x4B          
 			{
 				//TODO implement this instruction
@@ -332,12 +482,33 @@ void interpreter()
 				break;
 			}
 		case   IASTORE:           //0x4F         
+			{
+				goto unsupport;
+			}
 		case   LASTORE:           //0x50         
+			{
+				goto unsupport;
+			}
 		case   FASTORE:           //0x51         
+			{
+				goto unsupport;
+			}
 		case   DASTORE:           //0x52         
+			{
+				goto unsupport;
+			}
 		case   AASTORE:           //0x53         
+			{
+				goto unsupport;
+			}
 		case   BASTORE:           //0x54         
+			{
+				goto unsupport;
+			}
 		case   CASTORE:           //0x55         
+			{
+				goto unsupport;
+			}
 		case   SASTORE:           //0x56         
 
 			//stack:
@@ -348,6 +519,9 @@ void interpreter()
 				break;
 			}
 		case   POP2:              //0x58      
+			{
+				goto unsupport;
+			}
 		case   DUP:               //0x59     
 			{
 				*(pcurrent_frame->sp) = *(pcurrent_frame->sp - 1);
@@ -357,10 +531,25 @@ void interpreter()
 				break;
 			}
 		case   DUP_X1:            //0x5A        
+			{
+				goto unsupport;
+			}
 		case   DUP_X2:            //0x5B        
+			{
+				goto unsupport;
+			}
 		case   DUP2:              //0x5C      
+			{
+				goto unsupport;
+			}
 		case   DUP2_X1:           //0x5D         
+			{
+				goto unsupport;
+			}
 		case   DUP2_X2:           //0x5E         
+			{
+				goto unsupport;
+			}
 		case   SWAP:              //0x5F      
 
 			//math:
@@ -375,86 +564,302 @@ void interpreter()
 				break;
 			}
 		case   LADD:              //0x61      
+			{
+				goto unsupport;
+			}
 		case   FADD:              //0x62      
+			{
+				goto unsupport;
+			}
 		case   DADD:              //0x63      
+			{
+				goto unsupport;
+			}
 		case   ISUB:              //0x64      
+			{
+				goto unsupport;
+			}
 		case   LSUB:              //0x65      
+			{
+				goto unsupport;
+			}
 		case   FSUB:              //0x66      
+			{
+				goto unsupport;
+			}
 		case   DSUB:              //0x67      
+			{
+				goto unsupport;
+			}
 		case   IMUL:              //0x68      
+			{
+				goto unsupport;
+			}
 		case   LMUL:              //0x69      
+			{
+				goto unsupport;
+			}
 		case   FMUL:              //0x6A      
+			{
+				goto unsupport;
+			}
 		case   DMUL:              //0x6B      
+			{
+				goto unsupport;
+			}
 		case   IDIV:              //0x6C      
+			{
+				goto unsupport;
+			}
 		case   LDIV:              //0x6D      
+			{
+				goto unsupport;
+			}
 		case   FDIV:              //0x6E      
+			{
+				goto unsupport;
+			}
 		case   DDIV:              //0x6F      
+			{
+				goto unsupport;
+			}
 		case   IREM:              //0x70      
+			{
+				goto unsupport;
+			}
 		case   LREM:              //0x71      
+			{
+				goto unsupport;
+			}
 		case   FREM:              //0x72      
+			{
+				goto unsupport;
+			}
 		case   DREM:              //0x73      
+			{
+				goto unsupport;
+			}
 		case   INEG:              //0x74      
+			{
+				goto unsupport;
+			}
 		case   LNEG:              //0x75      
+			{
+				goto unsupport;
+			}
 		case   FNEG:              //0x76      
+			{
+				goto unsupport;
+			}
 		case   DNEG:              //0x77      
+			{
+				goto unsupport;
+			}
 		case   ISHL:              //0x78      
+			{
+				goto unsupport;
+			}
 		case   LSHL:              //0x79      
+			{
+				goto unsupport;
+			}
 		case   ISHR:              //0x7A      
+			{
+				goto unsupport;
+			}
 		case   LSHR:              //0x7B      
+			{
+				goto unsupport;
+			}
 		case   IUSHR:             //0x7C       
+			{
+				goto unsupport;
+			}
 		case   LUSHR:             //0x7D       
+			{
+				goto unsupport;
+			}
 		case   IAND:              //0x7E      
+			{
+				goto unsupport;
+			}
 		case   LAND:              //0x7F      
+			{
+				goto unsupport;
+			}
 		case   IOR:               //0x80     
+			{
+				goto unsupport;
+			}
 		case   LOR:               //0x81     
+			{
+				goto unsupport;
+			}
 		case   IXOR:              //0x82      
+			{
+				goto unsupport;
+			}
 		case   LXOR:              //0x83      
+			{
+				goto unsupport;
+			}
 		case   IINC:              //0x84      
 
 			//conversation:
 		case   I2L:               //0x85     
+			{
+				goto unsupport;
+			}
 		case   I2F:               //0x86     
+			{
+				goto unsupport;
+			}
 		case   I2D:               //0x87     
+			{
+				goto unsupport;
+			}
 		case   L2I:               //0x88     
+			{
+				goto unsupport;
+			}
 		case   L2F:               //0x89     
+			{
+				goto unsupport;
+			}
 		case   L2D:               //0x8A     
+			{
+				goto unsupport;
+			}
 		case   F2I:               //0x8B     
+			{
+				goto unsupport;
+			}
 		case   F2L:               //0x8C     
+			{
+				goto unsupport;
+			}
 		case   F2D:               //0x8D     
+			{
+				goto unsupport;
+			}
 		case   D2I:               //0x8E     
+			{
+				goto unsupport;
+			}
 		case   D2L:               //0x8F     
+			{
+				goto unsupport;
+			}
 		case   D2F:               //0x90     
+			{
+				goto unsupport;
+			}
 		case   I2B:               //0x91     
+			{
+				goto unsupport;
+			}
 		case   I2C:               //0x92     
+			{
+				goto unsupport;
+			}
 		case   I2S:               //0x93     
 
 			//comparision:
 		case   LCMP:              //0x94      
+			{
+				goto unsupport;
+			}
 		case   FCMPL:             //0x95       
+			{
+				goto unsupport;
+			}
 		case   FCMPG:             //0x96       
+			{
+				goto unsupport;
+			}
 		case   DCMPL:             //0x97       
+			{
+				goto unsupport;
+			}
 		case   DCMPG:             //0x98       
+			{
+				goto unsupport;
+			}
 		case   IFEQ:              //0x99      
+			{
+				goto unsupport;
+			}
 		case   IFNE:              //0x9A      
+			{
+				goto unsupport;
+			}
 		case   IFLT:              //0x9B      
+			{
+				goto unsupport;
+			}
 		case   IFGE:              //0x9C      
+			{
+				goto unsupport;
+			}
 		case   IFGT:              //0x9D      
+			{
+				goto unsupport;
+			}
 		case   IFLE:              //0x9E      
+			{
+				goto unsupport;
+			}
 		case   IF_ICMPEQ:         //0x9F           
+			{
+				goto unsupport;
+			}
 		case   IF_ICMPNE:         //0xA0           
+			{
+				goto unsupport;
+			}
 		case   IF_ICMPLT:         //0xA1           
+			{
+				goto unsupport;
+			}
 		case   IF_ICMPGE:         //0xA2           
+			{
+				goto unsupport;
+			}
 		case   IF_ICMPGT:         //0xA3           
+			{
+				goto unsupport;
+			}
 		case   IF_ICMPLE:         //0xA4           
+			{
+				goto unsupport;
+			}
 		case   IF_ACMPEQ:         //0xA5           
+			{
+				goto unsupport;
+			}
 		case   IF_ACMPNE:         //0xA6           
 
 			//control:
 		case   GOTO:              //0xA7      
+			{
+				goto unsupport;
+			}
 		case   JSR:               //0xA8     
+			{
+				goto unsupport;
+			}
 		case   RET:               //0xA9     
+			{
+				goto unsupport;
+			}
 		case   TABLESWITCH:       //0xAA             
+			{
+				goto unsupport;
+			}
 		case   LOOKUPSWITCH:      //0xAB              
+			{
+				goto unsupport;
+			}
 		case   IRETURN:           //0xAC         
 			{
 				// TODO check whether current method is clinit or not
@@ -472,9 +877,21 @@ void interpreter()
 				break;
 			}
 		case   LRETURN:           //0xAD         
+			{
+				goto unsupport;
+			}
 		case   FRETURN:           //0xAE         
+			{
+				goto unsupport;
+			}
 		case   DRETURN:           //0xAF         
+			{
+				goto unsupport;
+			}
 		case   ARETURN:           //0xB0         
+			{
+				goto unsupport;
+			}
 		case   RETURN:            //0xB1        
 			{
 
@@ -558,6 +975,21 @@ void interpreter()
 			}
 		case   GETFIELD:          //0xB4          
 			{
+				//TODO need more check, array?
+				Object* pobject = *(Object** )(-- pcurrent_frame->sp);
+				index = (((*(pcurrent_frame->pc + 1)) << 8) & 0xFF00) | (*(pcurrent_frame->pc + 2) & 0x00FF);
+				pconstant_field_info = (struct constant_fieldref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+
+				if (pconstant_field_info->offset == 0xFFFF)
+				{
+					resolution_field(pconstant_field_info);
+				}
+
+				//TODO now only support int
+				*(int* )(pcurrent_frame->sp ++) = *(int* )((u1* )pobject->pvalues + pconstant_field_info->offset);
+
+				pcurrent_frame->pc += 3;
+
 				break;
 			}
 		case   PUTFIELD:          //0xB5          
@@ -722,7 +1154,13 @@ void interpreter()
 			}
 
 		case   INVOKEINTERFACE:   //0xB9                 
+			{
+				goto unsupport;
+			}
 		case   INVOKEDYNAMIC:     //0xBA               
+			{
+				goto unsupport;
+			}
 		case   NEW:               //0xBB     
 			{
 				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
@@ -763,30 +1201,76 @@ void interpreter()
 				break;
 			}
 		case   NEWARRAY:          //0xBC          
+			{
+				goto unsupport;
+			}
 		case   ANEWARRAY:         //0xBD           
+			{
+				goto unsupport;
+			}
 		case   ARRAYLENGTH:       //0xBE             
+			{
+				goto unsupport;
+			}
 		case   ATHROW:            //0xBF        
+			{
+				goto unsupport;
+			}
 		case   CHECKCAST:         //0xC0           
+			{
+				goto unsupport;
+			}
 		case   INSTANCEOF:        //0xC1            
+			{
+				goto unsupport;
+			}
 		case   MONITORENTER:      //0xC2              
+			{
+				goto unsupport;
+			}
 		case   MONITOREXIT:       //0xC3             
 
 			//extend:
 		case   WIDE:              //0xC4      
+			{
+				goto unsupport;
+			}
 		case   MULTIANEWARRAY:    //0xC5                
+			{
+				goto unsupport;
+			}
 		case   IFNULL:            //0xC6        
+			{
+				goto unsupport;
+			}
 		case   IFNONNULL:         //0xC7           
+			{
+				goto unsupport;
+			}
 		case   GOTO_W:            //0xC8        
+			{
+				goto unsupport;
+			}
 		case   JSR_W:             //0xC9       
 
 			//reserve:
 		case   BREAKPOINT:        //0xCA            
+			{
+				goto unsupport;
+			}
 		case   IMPDEP1:           //0xFE         
+			{
+				goto unsupport;
+			}
 		case   IMPDEP2:           //0xFF         
+			{
+				goto unsupport;
+			}
 
 		default:
-			printf("do not support instruction: %02x", ins);
-			break;
+unsupport:
+			printf("error: do not support instruction: %02x", ins);
+			return;
 		}
 
 		ins = fetch();
