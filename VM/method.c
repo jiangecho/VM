@@ -24,6 +24,11 @@ u2 get_parameters_size(struct method_info* pmethod_info)
 	struct constant_utf8_info* pdescriptor = pmethod_info->pdescriptor_constant_utf8_info;
 	u1* pchar = pdescriptor->pbytes;
 
+	if (!mask(pmethod_info->access_flags, ACC_STATIC))
+	{
+		size = sizeof(Object* ); // the objectref
+	}
+
 	// the first byte is '('
 	pchar ++;
 	while(*pchar != ')')

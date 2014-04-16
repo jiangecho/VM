@@ -130,6 +130,13 @@ void interpreter()
 			}
 
 		case   SIPUSH:            //0x11        
+			{
+				*(pcurrent_frame->sp) = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   LDC:               //0x12     
 		case   LDC_W:             //0x13       
 		case   LDC2_W:            //0x14        
@@ -188,9 +195,41 @@ void interpreter()
 		case   DLOAD_2:           //0x28         
 		case   DLOAD_3:           //0x29         
 		case   ALOAD_0:           //0x2A         
+			{
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr);
+				*(Object** )(pcurrent_frame->sp) = *pobject;
+
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ALOAD_1:           //0x2B         
+			{
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr + 1);
+				*(Object** )(pcurrent_frame->sp) = *pobject;
+
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ALOAD_2:           //0x2C         
+			{
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr + 2);
+				*(Object** )(pcurrent_frame->sp) = *pobject;
+
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ALOAD_3:           //0x2D         
+			{
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr + 3);
+				*(Object** )(pcurrent_frame->sp) = *pobject;
+
+				pcurrent_frame->sp ++;
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   IALOAD:            //0x2E        
 		case   LALOAD:            //0x2F        
 		case   FALOAD:            //0x30        
@@ -253,9 +292,45 @@ void interpreter()
 		case   DSTORE_2:          //0x49          
 		case   DSTORE_3:          //0x4A          
 		case   ASTORE_0:          //0x4B          
+			{
+				//TODO implement this instruction
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr + 0);
+				//(Object* )(pcurrent_frame->plocals_start_addr) = (Object* )(--pcurrent_frame->sp);
+				*pobject = *(Object** )(--pcurrent_frame->sp);
+
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ASTORE_1:          //0x4C          
+			{
+				//TODO implement this instruction
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr + 1);
+				//(Object* )(pcurrent_frame->plocals_start_addr) = (Object* )(--pcurrent_frame->sp);
+				*pobject = *(Object** )(--pcurrent_frame->sp);
+
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ASTORE_2:          //0x4D          
+			{
+				//TODO implement this instruction
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr + 2);
+				//(Object* )(pcurrent_frame->plocals_start_addr) = (Object* )(--pcurrent_frame->sp);
+				*pobject = *(Object** )(--pcurrent_frame->sp);
+
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   ASTORE_3:          //0x4E          
+			{
+				//TODO implement this instruction
+				Object** pobject = (Object** )(pcurrent_frame->plocals_start_addr + 3);
+				//(Object* )(pcurrent_frame->plocals_start_addr) = (Object* )(--pcurrent_frame->sp);
+				*pobject = *(Object** )(--pcurrent_frame->sp);
+
+				pcurrent_frame->pc ++;
+				break;
+			}
 		case   IASTORE:           //0x4F         
 		case   LASTORE:           //0x50         
 		case   FASTORE:           //0x51         
@@ -474,8 +549,7 @@ void interpreter()
 				else
 				{
 					//TODO now only support int(for test), need more support
-					*(u4* )((u1* )pcurrent_frame->pclass->pclass_instance->pvalues + pconstant_field_info->offset) = *(--pcurrent_frame->sp);
-					pcurrent_frame->sp --;
+					*(u4* )((u1* )pconstant_field_info->pclass->pclass_instance->pvalues + pconstant_field_info->offset) = *(--pcurrent_frame->sp);
 					pcurrent_frame->pc ++;
 				}
 
@@ -483,9 +557,130 @@ void interpreter()
 				break;
 			}
 		case   GETFIELD:          //0xB4          
+			{
+				break;
+			}
 		case   PUTFIELD:          //0xB5          
+			{
+				Object* pobject;
+				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				pconstant_field_info = (struct constant_fieldref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+
+				// TODO need more check
+				// TODO now only support int, specially the long and double(the size)
+
+				if (pconstant_field_info->offset == 0xFFFF)
+				{
+					resolution_field(pconstant_field_info);
+				}
+
+				pobject = *(Object** )(pcurrent_frame->sp - 2);
+				*(int* )((u1* )pobject->pvalues + pconstant_field_info->offset) = *(int* )(pcurrent_frame->sp - 1);
+
+				pcurrent_frame->sp -= 2;
+				pcurrent_frame->pc ++;
+
+				break;
+			}
 		case   INVOKEVIRTUAL:     //0xB6               
+			{
+				//TODO need more check
+				u2 parameters_size;
+				struct Class* ptmp_class;
+				Object* pobject;
+				struct method_info* pmethod_info = NULL;
+				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				pconstant_methodref_info = (struct constant_methodref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+
+				// the class has not been prepared
+				if (pclass->status < CLASS_PREPARED)
+				{
+					prepare(pclass);
+				}
+
+				// the constant pool entry has not been resolved
+				if (pconstant_methodref_info->pmethod_info == NULL)
+				{
+					resolution_method(pclass, pconstant_methodref_info);
+				}
+
+				parameters_size = get_parameters_size(pconstant_methodref_info->pmethod_info);
+				pobject = *(Object** )(pcurrent_frame->sp - 3);
+				ptmp_class = pobject->pclass;
+
+				while(ptmp_class)
+				{
+					pmethod_info = find_class_method(ptmp_class, pconstant_methodref_info->pconstant_name_and_type_info->pname_constant_utf8_info->pbytes,
+						pconstant_methodref_info->pconstant_name_and_type_info->pname_constant_utf8_info->length,
+						pconstant_methodref_info->pconstant_name_and_type_info->pdescriptor_constant_utf8_info->pbytes,
+						pconstant_methodref_info->pconstant_name_and_type_info->pdescriptor_constant_utf8_info->length);
+					if (pmethod_info)
+					{
+						break;
+					}
+					else
+					{
+						ptmp_class = ptmp_class->psuper_class;
+					}
+
+				}
+				pcurrent_frame->pc ++;
+				
+				// TODO the current frame's sp will be modify in push_frame.
+				// move it here
+				push_frame(pcurrent_stack, ptmp_class, pmethod_info, update_current_frame);
+
+				
+				break;
+			}
 		case   INVOKESPECIAL:     //0xB7               
+			{
+				//TODO need more check, p483
+
+				struct Class* psuper_class;
+				struct method_info* pmethod_info = NULL;
+				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
+				pconstant_methodref_info = (struct constant_methodref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
+
+				// the class has not been prepared
+				if (pclass->status < CLASS_PREPARED)
+				{
+					prepare(pclass);
+				}
+
+				// the constant pool entry has not been resolved
+				if (pconstant_methodref_info->pmethod_info == NULL)
+				{
+					resolution_method(pclass, pconstant_methodref_info);
+				}
+
+				//Let C be the direct superclass of the current class
+				psuper_class = pcurrent_frame->pclass->psuper_class;
+
+				while(psuper_class)
+				{
+					pmethod_info = find_class_method(psuper_class, pconstant_methodref_info->pconstant_name_and_type_info->pname_constant_utf8_info->pbytes,
+						pconstant_methodref_info->pconstant_name_and_type_info->pname_constant_utf8_info->length,
+						pconstant_methodref_info->pconstant_name_and_type_info->pdescriptor_constant_utf8_info->pbytes,
+						pconstant_methodref_info->pconstant_name_and_type_info->pdescriptor_constant_utf8_info->length);
+					if (pmethod_info)
+					{
+						break;
+					}
+					else
+					{
+						psuper_class = psuper_class->psuper_class;
+					}
+
+				}
+				pcurrent_frame->pc ++;
+				
+				// TODO the current frame's sp will be modify in push_frame.
+				// move it here
+				push_frame(pcurrent_stack, psuper_class, pmethod_info, update_current_frame);
+
+				break;
+			}
 		case   INVOKESTATIC:      //0xB8              
 			{
 				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
@@ -534,8 +729,37 @@ void interpreter()
 				// TODO can not use pclass directly
 				pconstant_class_info = (struct constant_class_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
 
-				//TODO check whether the resolved class is an interface or not?
+				pclass = pconstant_class_info->pclass;
+				if (pclass == NULL)
+				{
+					// TODO can not find method
+				}
+				else
+				{
+					// the class has not been prepared
+					if (pclass->status < CLASS_PREPARED)
+					{
+						prepare(pclass);
+					}
 
+					//TODO initialize the class
+					if (pclass->status < CLASS_INITIALIZING)
+					{
+						// attention: need to re-interpret the NEW instruction
+						pcurrent_frame->pc = pcurrent_frame->pc - 2;
+						initialize(pclass, pcurrent_stack);
+					}
+					else
+					{
+						//TODO check whether the resolved class is an interface or not?
+						Object* pobject = create_object(pconstant_class_info->pclass);
+						*(Object** )(pcurrent_frame->sp) = pobject;
+						
+						pcurrent_frame->sp ++;
+						pcurrent_frame->pc ++;
+					}
+					
+				}
 				break;
 			}
 		case   NEWARRAY:          //0xBC          

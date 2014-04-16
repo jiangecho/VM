@@ -20,6 +20,8 @@ Object* create_object(struct Class* pclass)
 		pobject->pclass = pclass;
 		pobject->ref_count = 0;
 		pobject->pvalues = (u1* )pobject + sizeof(Object);
+
+		add_object_to_object_table(pobject);
 	}
 	else
 	{
