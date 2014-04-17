@@ -318,4 +318,9 @@ u2 get_class_total_fields_size(struct Class* pclass);
 u2 get_instance_total_fields_size(struct Class* pclass);
 u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type);
 
+// check whether pclass is a subclass of pbase_class or not?
+u1 is_subclass_of(struct Class* pbase_class, struct Class* pclass);
+u1 is_superclass_of(struct Class* pbase_class, struct Class* pclass);
+
+
 #endif

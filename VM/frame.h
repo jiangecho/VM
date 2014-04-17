@@ -14,8 +14,11 @@ struct frame
 	// pointer to the previous frame
 	struct frame* fp;
 
-	// point to the next opcode to execute
+	// point to the current opcode to execute
 	u1* pc;
+
+	// point to the current method's first opcode, only for ATHROW
+	u1* base_pc;
 
 	// point to the top of the current frame
 	u4* sp;

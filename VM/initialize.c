@@ -25,10 +25,12 @@ u1 initialize(struct Class* pclass, struct stack* pstack)
 		pcur_class = pclass->psuper_class;
 		while(pcur_class)
 		{
-			//TODO now we do not support Object's clinit
+			//TODO now we do not support Object's clinit (do not support jre classes clinit)
 			// because some methods in clinit, we still do not support, so...
 			if (compare(pcur_class->pclass_name_entry->pname, pcur_class->pclass_name_entry->name_len,
-				"java/lang/Object", strlen("java/lang/Object")))
+				"java/lang/Object", strlen("java/lang/Object"))
+				|| (compare(pcur_class->pclass_name_entry->pname, pcur_class->pclass_name_entry->name_len,
+				"java/lang/Throwable", strlen("java/lang/Throwable"))))
 			{
 				break;
 			}

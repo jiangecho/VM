@@ -65,14 +65,24 @@ void prepare(struct Class* pclass)
 				if (attribute_info.attribute_type == CONSTANT_VALUE_ATTRIBUTE_INT_TYPE)
 				{
 					index = ((struct constant_value_attribute_info* )(attribute_info.pinfo))->constant_value_index;
-					pconstant_integer_info = (struct constant_integer_info* )pclass->pcp_info[index].pinfo;
 
-					// attention can not use field_info.offset as the offset here
-					// because the field_info.offset include the private field
 
-					//TODO now only support int value
-					// TODO fix bug?: big endian
-					*((int* )((u1* )pclass_instance->pvalues + offset)) = pconstant_integer_info->value;
+					//TODO now only support int type
+					if (pclass->pcp_info[index].tag == CONSTANT_Integer)
+					{
+						pconstant_integer_info = (struct constant_integer_info* )pclass->pcp_info[index].pinfo;
+
+						// attention can not use field_info.offset as the offset here
+						// because the field_info.offset include the private field
+
+						//TODO now only support int value
+						// TODO fix bug?: big endian
+						*((int* )((u1* )pclass_instance->pvalues + offset)) = pconstant_integer_info->value;
+					}
+					else
+					{
+						printf("now only support int\n");
+					}
 				}
 
 			}

@@ -508,6 +508,7 @@ struct Class* load_class(char* pclass_path)
 								pexception_table_entry ++;
 							}
 						}
+						else
 						{
 							pcode_attribute_info->pexception_table_entry = NULL;
 						}

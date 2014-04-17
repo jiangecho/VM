@@ -266,3 +266,27 @@ u2 get_total_public_protected_fields_size(struct Class* pclass, u1 fileds_type)
 	}
 
 }
+
+u1 is_subclass_of(struct Class* pbase_class, struct Class* pclass)
+{
+	u1 ret = FAIL;
+	struct Class* ptmp_class = pclass->psuper_class;
+	while(!ptmp_class)
+	{
+		if (pbase_class == ptmp_class)
+		{
+			ret = OK;
+			break;
+		}
+		ptmp_class = ptmp_class->psuper_class;
+
+	}
+
+	return ret;
+
+}
+
+u1 is_superclass_of(struct Class* pbase_class, struct Class* pclass)
+{
+	return is_subclass_of(pclass, pbase_class);
+}

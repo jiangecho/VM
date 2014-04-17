@@ -83,7 +83,10 @@ u1 push_frame(struct stack* pstack, struct Class* pclas, struct method_info* pme
 				pframe->pmethod_info = pmethod_info;
 				pframe->pclass = pclas;
 				pframe->pc = pcode_attribute_info->pcode;
+				pframe->base_pc = pcode_attribute_info->pcode;
 				pframe->sp = pframe->pstack_start_addr;
+
+				//TODO move the following 5 lines to interpret to keep the instructions style consistent
 				if (pstack->pcurrent_frame != NULL)
 				{
 					//pstack->pcurrent_frame->sp -= parameters_size;
@@ -121,15 +124,12 @@ u1 pop_frame(struct stack* pstack, void (*pcallback)())
 		pstack->ptop = pstack->pbottom;
 	}
 
+	pcallback();
 
 	// while pstack->ptop == pstack->pbottom, it means that it is the end of current thread(there is not
 	// any more bytecode to interpreter).
 	if (pstack->ptop > pstack->pbottom)
 	{
-		if (pcallback != NULL)
-		{
-			pcallback();
-		}
 		return OK;
 	}
 	else

@@ -1024,6 +1024,7 @@ void interpreter()
 				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
 				pconstant_methodref_info = (struct constant_methodref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
 
+				pclass = pconstant_methodref_info->pclass;
 				// the class has not been prepared
 				if (pclass->status < CLASS_PREPARED)
 				{
@@ -1074,6 +1075,7 @@ void interpreter()
 				index = (((*(++pcurrent_frame->pc)) << 8) & 0xFF00) | (*(++pcurrent_frame->pc) & 0x00FF);
 				pconstant_methodref_info = (struct constant_methodref_info* )pcurrent_frame->pclass->pcp_info[index].pinfo;
 
+				pclass = pconstant_methodref_info->pclass;
 				// the class has not been prepared
 				if (pclass->status < CLASS_PREPARED)
 				{
@@ -1214,7 +1216,66 @@ void interpreter()
 			}
 		case   ATHROW:            //0xBF        
 			{
-				goto unsupport;
+				u1 catched = FAIL;
+				u1* pbase_pc;
+				u2 i;
+				Object* pobjectref = *(Object** )(pcurrent_frame->sp - 1);
+				struct Class* pexception_class = pobjectref->pclass;
+				struct Class* pcan_handle_exception_class;
+
+				struct code_attribute_info* pcode_attribute_info;
+				struct exception_table_entry* pexception_table_entry;
+
+				try:
+				if (pcurrent_frame == NULL)
+				{
+					printf("error: can not catch exception\n");
+					return;
+				}
+				for (index = 0; index < pcurrent_frame->pmethod_info->attributes_count; index++)
+				{
+					if (pcurrent_frame->pmethod_info->pattributes[index].attribute_type == CODE_ATTRIBUTE_INT_TYPE)
+					{
+						pcode_attribute_info = (struct code_attribute_info* )pcurrent_frame->pmethod_info->pattributes[index].pinfo;
+						pbase_pc = pcode_attribute_info->pcode;
+						break;
+					}
+				}
+
+				for (i = 0; i < pcode_attribute_info->exception_table_length; i ++)
+				{
+					pexception_table_entry = (struct exception_table_entry* )(pcode_attribute_info->pexception_table_entry + i);
+
+					// in the range
+					if (pexception_table_entry->start_pc <= pcurrent_frame->pc - pbase_pc
+						&& pexception_table_entry->end_pc >= pcurrent_frame->pc - pbase_pc)
+					{
+						pcan_handle_exception_class = ((struct constant_class_info* )pcurrent_frame->pclass->pcp_info[pexception_table_entry->catch_type].pinfo)->pclass;
+						
+						// found it
+						if ((pexception_class == pcan_handle_exception_class) 
+							|| (is_subclass_of(pcan_handle_exception_class, pexception_class)))
+						{
+							// clear the stack and reset pc
+							pcurrent_frame->sp = pcurrent_frame->pstack_start_addr;
+							*(Object** )pcurrent_frame->sp = pobjectref;
+							pcurrent_frame->pc = pcurrent_frame->base_pc + pexception_table_entry->handler_pc;
+							pcurrent_frame->sp ++;
+
+							catched = OK;
+
+							break;
+						}
+					}
+				}
+
+				if (!catched)
+				{
+					pop_frame(pcurrent_stack, update_current_frame);
+					goto try;
+				}
+
+				break;
 			}
 		case   CHECKCAST:         //0xC0           
 			{
