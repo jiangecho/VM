@@ -1,6 +1,7 @@
 Debug
 ipch
 java_lib
+com
 *.class
 *.sdf
 *.opensdf

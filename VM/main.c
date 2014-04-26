@@ -16,7 +16,9 @@
 
 #include "method.h"
 #include "stack.h"
+#include "heap.h"
 #include "interpreter.h"
+#include "prepare.h"
 
 #include "linker.h"
 
@@ -43,27 +45,25 @@ int main()
 	
 	init_code_area(MAX_CODE_AREA_SIZE);
 	init_class_loader();
-	pclass =  load_class("./SuperInterface.class");
+	pclass =  load_class("./com/test/TestA.class");
+	//pclass =  load_class("./java_lib/java/lang/Exception.class");
+	//pclass =  load_class("./java_lib/java/lang/Throwable.class");
 	load_pending_classes();
+	pmethod_main = find_method("com/test/TestA", strlen("com/test/TestA"), "main", strlen("main"),
+		"([Ljava/lang/String;)V", strlen("([Ljava/lang/String;)V"));
+	//link_class(pclass);
 	link();
-	pclass =  load_class("./SubInterface.class");
-	link_class(pclass);
+	pmethod_main = find_method("com/test/TestA", strlen("com/test/TestA"), "main", strlen("main"),
+		"([Ljava/lang/String;)V", strlen("([Ljava/lang/String;)V"));
 
-	/*
-	pmethod_main = find_method("com/test/TestA", strlen("com/test/TestA"), "main", strlen("main"));
 
-	pclass = NULL;
-	pclass = find_class("com/test/TestA", strlen("com/test/TestA"));
-
-	
-
-	pmain_stack = init_stack(1024);
-	push_frame(pmain_stack, pclass, pmethod_main);
+	pmain_stack = init_stack(MAX_STACK_SIZE);
+	init_heap(1024 * 1024);
+	//prepare(pclass);
+	push_frame(pmain_stack, pclass, pmethod_main, NULL);
 
 	set_current_stack(pmain_stack);
-	//interpreter();
-	*/
-	//link_class(loaded_class_table[3]);
+	interpreter();
 
 
 	return 0;
